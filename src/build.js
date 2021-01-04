@@ -20,7 +20,7 @@ const handleFile = async (buildPath, modulesDirectory, {path: srcPath, name, ext
     console.log(`Processing file: ${name}`)
     // todo going with await for now, likely async would be fine
     const sourceText = await fs.readFile(srcPath, 'utf-8')
-    const processedText = preprocessors.reduce((source, {matcher, handler})=> matcher.test(extension) ? handler(source) : source, sourceText)
+    const processedText = preprocessors.reduce((source, {matcher, handler})=> matcher.test(extension) ? handler(source, srcPath) : source, sourceText)
     return writeFile(buildPath, modulesDirectory, srcPath, processedText)
 }
 
