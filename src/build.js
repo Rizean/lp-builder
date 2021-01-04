@@ -1,13 +1,15 @@
 const fs = require('fs-extra')
 const path = require('path')
 const dirTree = require('directory-tree')
-const {replaceTabs, choices} = require('./processors')
+const {replaceTabs, choices, validateSyntax} = require('./processors')
 
 const preprocessors = [
     {matcher: /lp.*/, handler: replaceTabs},
     {matcher: /lp.*/, handler: choices},
 ]
-
+const postprocessors = [
+    {matcher: /lp.*/, handler: validateSyntax},
+]
 const writeFile = async (buildPath, modulesDirectory, sourcePath, source) => {
     const outPath = `${buildPath}${sourcePath.replace(modulesDirectory, '')}`
     // console.log(`buildPath:${buildPath}  modulesDirectory:${modulesDirectory}  sourcePath:${sourcePath}  outPath:${outPath}`)
@@ -20,7 +22,11 @@ const handleFile = async (buildPath, modulesDirectory, {path: srcPath, name, ext
     console.log(`Processing file: ${name}`)
     // todo going with await for now, likely async would be fine
     const sourceText = await fs.readFile(srcPath, 'utf-8')
-    const processedText = preprocessors.reduce((source, {matcher, handler})=> matcher.test(extension) ? handler(source, srcPath) : source, sourceText)
+    // multistage not sure if this makes sense - thinking is preprocessors/processors may fix issues that the postprocessors would throw an error on
+    // postprocessors are most concerned with validating
+    const processedText = preprocessors.reduce((source, {matcher, handler})=> matcher.test(extension) ? handler(source, srcPath, extension) : source, sourceText)
+    postprocessors.forEach(({matcher, handler})=> matcher.test(extension) && handler(processedText, srcPath, extension))
+
     return writeFile(buildPath, modulesDirectory, srcPath, processedText)
 }
 
