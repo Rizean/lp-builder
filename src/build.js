@@ -1,11 +1,12 @@
 const fs = require('fs-extra')
 const path = require('path')
 const dirTree = require('directory-tree')
-const {replaceTabs, choices, validateSyntax} = require('./processors')
+const {replaceTabs, choices, validateSyntax, processOperands} = require('./processors')
 
 const preprocessors = [
     {matcher: /lp.*/, handler: replaceTabs},
     {matcher: /lp.*/, handler: choices},
+    {matcher: /lp.*/, handler: processOperands},
 ]
 const postprocessors = [
     {matcher: /lp.*/, handler: validateSyntax},
@@ -39,9 +40,14 @@ const handleDirectory = async (buildPath, sourcePath, {path, name, children, siz
 }
 
 const build = async (buildPath, sourcePath) => {
-    const tree = dirTree(sourcePath)
-    await fs.emptydir(buildPath)
-    await handleDirectory(buildPath, sourcePath, tree)
+    try {
+        const tree = dirTree(sourcePath)
+        await fs.emptydir(buildPath)
+        await handleDirectory(buildPath, sourcePath, tree)
+    } catch (e) {
+        console.error(`BUILD FAILED!`)
+        console.error(e)
+    }
 }
 
 module.exports = build
