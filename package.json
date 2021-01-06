@@ -5,6 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "@types/yargs": "^15.0.9",
+    "chokidar": "^3.4.3",
     "directory-tree": "^2.2.5",
     "fs-extra": "^9.0.1",
     "uuid": "^8.3.1",
@@ -21,6 +22,7 @@
   "scripts": {
     "build:win": "./node_modules/.bin/pkg src/index.js --output ./dist/lpBuilder-win-x64 --targets node14-win-x64",
     "build:linux": "./node_modules/.bin/pkg src/index.js --output ./dist/lpBuilder-linux-x64 --targets node14-linux-x64",
-    "build:mac": "./node_modules/.bin/pkg src/index.js --output ./dist/lpBuilder-mac-x64 --targets node14-mac-x64"
+    "build:mac": "./node_modules/.bin/pkg src/index.js --output ./dist/lpBuilder-mac-x64 --targets node14-mac-x64",
+    "test:manual": "node src build ./tests/src/Modules ./results"
   }
 }

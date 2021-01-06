@@ -1,0 +1,59 @@
+WHAT: none
+WHERE: none
+WHEN: 0 - 24
+WHO: none
+OTHER: none
+
+    SceneStart()
+	_arousal = arousal
+	"After way to many drinks..."
+	Actor = generatePersonTemporary(bodybuilder, creep)
+	While !Player.isInterestedIn(Actor)
+        Actor = generatePersonTemporary()
+    Endwhile
+	Actor.dress()
+	Actor.movetoPerson(Player)
+	Actor(Annoyed):: "May, you have had to much to drink again. It's time to go."
+	Player(Confused):: "But my name is <Player.name>"
+	"<Actor.S> puts <Actor.p> hand on the small of my back and leader me out."
+	Player(Confused):: "Where are we going?"
+	Actor(Evil):: "I'm taking you home of course."
+	Player(Anxious):: "Oh, ok."
+	setBackground(residential)
+	"<Actor.S> slaps me hard on my ass as I walk into the home."
+	Player(Shocked):: "Ouch! Why did you do that?"
+	Actor(Evil):: "This will teach you to get plastered in a place like that."
+	"<Actor.S> quickly strips of my clothers and binds my hands. I'm to drunk to put up much of a fight."
+	Player.strip()
+	Player.dressBondage(Bdg_Handcuffs)
+	Player(Anxious):: "Please... don't..."
+    Actor.strip()
+    Actor(Evil):: "You're not the first dumb slut and won't be the last!"
+    TalkNonConsensual()
+	Filter(Aggressive)
+	TalkNonConsensual()
+	SexNoAffair(Actor, Player)
+	if arousal < _arousal
+		Actor(Surprised):: "DAM! You wanted this didn't you? I don't think I've every see someone orgasm that hard before!"
+		Player(Embarassed):: "No. I didn't want this."
+		"<Actor.S> slaps me accross the face!"
+		Actor(Angry):: "Don't lie to me! Your a rape baiting slut! Admit it!"
+		"<Actor.S> grabs me by the hair and pushes me down and starts spanking me!"
+		Player(Pain):: "PLEASE STOP!"
+		Actor(Evil):: "Tell me what you are and I'll stop."
+		Player(Embarassed):: "I am a..."
+		Player(Embarassed):: "SLUT!"
+		"I'm relieved as <Actor.s> stops spanking me."
+		Player(Drained):: "Can I please leave now? I promise I won't tell anyone."
+		Actor(Evil):: "I'm not done yet. That was just round one."
+		"I can't hide my excitement."
+		Player(Excited):: "Oh?"
+		Filter(Aggressive, Anal)
+		SexNoAffair(Actor, Player)
+	Endif
+	"Eventually, I pass out."
+	Player.strip()
+	moveTo(home)
+    SceneEnd()
+    timeout(500, bait_rape)
+

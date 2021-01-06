@@ -1,0 +1,12 @@
+ACTION_UNIQUEID: lp_test_action
+ACTION_NAME: LP Test Action
+WHERE: nightclub, bar, pub, restaurant, cafe, hotel, stripclub, brothel
+WHEN: 0 - 24
+MINUTES: 30 - 60
+TIMEOUT_MINUTES: 0
+ALSO_TIMEOUT:
+EFFECTS:  money -25 (START), intoxication +100 (DURATION), mood -1 (INTERRUPTED), mood +5 (END), energy -5 (END)
+CONDITIONS:
+MOVE_FIRST: true
+SCENE_ALWAYS: lp_test_scene
+ANIMATION:
