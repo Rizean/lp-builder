@@ -24,8 +24,8 @@ yargs(hideBin(process.argv))
     })
     .command('check <buildPath> <sourcePath>', 'Syntax is the same as build, but will only output the paths.', (yargs) => {
         yargs
-            .positional('sourcePath', {describe: 'source path', type: 'string'})
             .positional('buildPath', {describe: 'build path', type: 'string'})
+            .positional('sourcePath', {describe: 'source path', type: 'string'})
     }, ({sourcePath, buildPath}) => {
         console.log(`buildPath: ${resolveOutPath(buildPath)}`)
         console.log(`sourcePath: ${resolveInPath(sourcePath)}`)

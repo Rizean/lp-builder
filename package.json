@@ -1,6 +1,6 @@
 {
   "name": "lp-builder",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
@@ -23,6 +23,6 @@
     "build:win": "./node_modules/.bin/pkg src/index.js --output ./dist/lpBuilder-win-x64 --targets node14-win-x64",
     "build:linux": "./node_modules/.bin/pkg src/index.js --output ./dist/lpBuilder-linux-x64 --targets node14-linux-x64",
     "build:mac": "./node_modules/.bin/pkg src/index.js --output ./dist/lpBuilder-mac-x64 --targets node14-mac-x64",
-    "test:manual": "node src build ./tests/src/Modules ./results"
+    "test:manual": "node src build ../results ../tests/Modules"
   }
 }

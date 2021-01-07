@@ -17,10 +17,14 @@ const OPERANDS = [
     {syntax: '&&', regex: /(&+)/g, expect: 2, replace: '&&'},
     {syntax: '||', regex: /(\|+)/g, expect: 2, replace: '||'},
 ]
-
+const handleError = (msg, noThrow) => {
+    if (noThrow) return console.error(msg)
+    throw new Error(msg)
+}
 const getIndent = (str) => str.length - str.trimLeft().length
 const getDialog = (str) => {
     const strRegex = /.*(".*")/
+    if (!strRegex.test(str)) return ''
     const [, dialog] = strRegex.exec(str)
     return dialog
 }
@@ -28,7 +32,7 @@ const getNonDialog = (str) => {
     const dialog = getDialog(str.trimRight())
     return str.replace(dialog, '')
 }
-const countChar = (str, char) => (str.match(new RegExp(char, 'g')) || []).length
+const countChar = (str, char) => (str.match(new RegExp(`\\${char}`, 'g')) || []).length
 
 const checkSyntaxPair = ({line, ln, left, right}) => {
     const countRight = countChar(line, right)
@@ -46,67 +50,79 @@ const checkDialogue = (line, ln) => {
     // }
 }
 
-const processOperands = (str, ln) => {
-    const code = getNonDialog(str)
-    let modified = code
-    OPERANDS.forEach(({syntax, regex, expect, replace})=>{
-        const _modified = modified.replace(regex, replace)
-        if (modified.length !== code.length) {
-            console.warn(`LINE: ${ln} - INVALID_OPERAND - REPAIRED - expected ${syntax}`)
-            modified = _modified
-        }
-    })
-    return str.replace(code, modified)
-}
+const processOperands = (source, srcPath, extension) => {
+    return source.map((line, i) => {
+        const ln = i + 1
+        // const dialog = getDialog(line)
+        const code = getNonDialog(line)
 
-const validateSyntax = (src, sourcePath, extension) => {
+        let modified = code
+        OPERANDS.forEach(({syntax, regex, expect, replace}) => {
+            const _modified = modified.replace(regex, replace)
+            if (_modified.length !== modified.length) {
+                console.warn(`FILE: ${srcPath} LINE: ${ln} - INVALID_OPERAND - REPAIRED - expected ${syntax}`)
+                modified = _modified
+            }
+        })
+        return line.replace(code, modified)
+    })
+}
+// {source, path, name, extension, size, type, noThrow = true}
+// const validateSyntax = ({src, sourcePath, extension, noThrow = true}) => {
+const validateSyntax = ({source, path, name, extension, size, type, noThrow = true}) => {
+    console.log(`Validating Syntax: `, path)
     let hasSceneStart = false
     let hasSceneEnd = false
     let inRandomBlock = false
     let randomIndent = 0
 
-    const lines = src.split('\n')
-    lines.forEach((line, i) => {
+    // const lines = src.split('\n')
+    source.forEach((line, i) => {
         const ln = i + 1
         const indent = getIndent(line)
-        if (inRandomBlock && indent !== randomIndent) console.warn(`${sourcePath} has invalid Random indent on line: ${ln}`)
+        //if (inRandomBlock && indent < (randomIndent + 2)) console.warn(`${sourcePath} has invalid Random indent on line: ${ln}`)
 
         if (line.trim().toLowerCase() === 'scenestart()') {
-            if (hasSceneStart) throw new Error(`${sourcePath} has multiple SceneStart()! Second detected on line: ${ln}`)
+            if (hasSceneStart) handleError(`${path} has multiple SceneStart()! Second detected on line: ${ln}`)
             hasSceneStart = true
         } else if (line.trim().toLowerCase() === 'sceneend()') {
-            if (hasSceneEnd) throw new Error(`${sourcePath} has multiple SceneEnd()! Second detected on line: ${ln}`)
+            if (hasSceneEnd) handleError(`${path} has multiple SceneEnd()! Second detected on line: ${ln}`)
             hasSceneEnd = true
         } else if (line.trim().toLowerCase() === 'random') {
-            if (inRandomBlock) throw new Error(`${sourcePath} has Random block inside Random block! Second Random detected on line: ${ln}`)
+            if (inRandomBlock) handleError(`${path} has Random block inside Random block! Second Random detected on line: ${ln}`)
             inRandomBlock = true
             randomIndent = getIndent(line)
+        } else if (line.trim().toLowerCase() === 'endrandom') {
+            inRandomBlock = false
+        } else if (inRandomBlock && indent < (randomIndent + 2)) {
+            console.warn(`${path} has invalid Random indent on line: ${ln}`)
         }
         if (line.includes('"')) checkDialogue(line)
         checkSyntaxPair({line, ln, left: "[", right: "]"})
         checkSyntaxPair({line, ln, left: "(", right: ")"})
     })
 
-    if (extension === 'lpscene' && !hasSceneStart) throw new Error(`${sourcePath} is missing SceneStart()!`)
-    if (extension === 'lpscene' && !hasSceneEnd) throw new Error(`${sourcePath} is missing SceneEnd()!`)
-    // if (extension === 'lpscene' && inRandomBlock) throw new Error(`${sourcePath} has unterminated Random block!`)
-    if (inRandomBlock) throw new Error(`${sourcePath} has unterminated Random block!`)
-    return src
+    if (extension === '.lpscene' && !hasSceneStart) handleError(`${path} is missing SceneStart()!`, noThrow)
+    if (extension === '.lpscene' && !hasSceneEnd) handleError(`${path} is missing SceneEnd()!`, noThrow)
+    if (inRandomBlock) handleError(`${path} has unterminated Random block!`, noThrow)
+    return source
 }
 
-const choices = (src, sourcePath) => {
-    const lines = src.split('\n')
+// const choices = (src, sourcePath) => {
+// {source, path, name, extension, size, type, noThrow = true}
+const choices = ({source, path, name, extension, size, type, noThrow = true}) => {
     const out = []
     const choiceRegex = /\s*\d+::/
     let inChoiceBlock = false
-    lines.forEach((line, i) => {
+    source.forEach((line, i) => {
+        const ln = i + 1
         if (choiceRegex.test(line)) {
             inChoiceBlock = true
             out.push(line)
         } else if (inChoiceBlock) {
             if (line.trim() > '') {
                 out.push('')
-                console.warn(`WARNING: Missing 'CHOICE' line break in ${sourcePath} on line ${i + 1}.`)
+                console.warn(`WARNING: Missing 'CHOICE' line break in ${path} on line ${ln}.`)
             }
             out.push(line)
             inChoiceBlock = false
@@ -114,12 +130,17 @@ const choices = (src, sourcePath) => {
             out.push(line)
         }
     })
-    return out.join('\n')
+    return out
 }
 
+const replaceTabs = ({source, path, name, extension, size, type, noThrow = true, options = {} }) => {
+    const {indent = '    '} = options
+    return source.map(line=>line.replace(/\t/g, indent))
+}
 
 module.exports = {
-    replaceTabs: (src, spaces = '    ') => src.replace(/\t/g, spaces),
+    // replaceTabs: (src, spaces = '    ') => src.replace(/\t/g, spaces),
+    replaceTabs,
     choices,
     validateSyntax,
     processOperands

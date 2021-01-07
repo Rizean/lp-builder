@@ -198,3 +198,4 @@ build/
 /testData/
 !/src/libs/tags/
 /examples/
+/results/
