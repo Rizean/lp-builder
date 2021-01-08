@@ -86,7 +86,7 @@ const validateSyntax = ({source, path, name, extension, size, type, noThrow = tr
         //if (inRandomBlock && indent < (randomIndent + 2)) logger.warn(`${sourcePath} has invalid Random indent on line: ${ln}`)
 
         if (line.trim().toLowerCase() === 'scenestart()') {
-            if (hasSceneStart) handleError({noThrow, ln, path, error: MULTIPLE_SCENE_START, msg: `Multiple SceneStart()`})
+            // if (hasSceneStart) handleError({noThrow, ln, path, error: MULTIPLE_SCENE_START, msg: `Multiple SceneStart()`})
             hasSceneStart = true
         }
         else if (line.trim().toLowerCase() === 'sceneend()') {
@@ -107,8 +107,8 @@ const validateSyntax = ({source, path, name, extension, size, type, noThrow = tr
         checkSyntaxPair({noThrow, line, path, ln, left: "(", right: ")"})
     })
 
-    if (extension === '.lpscene' && !hasSceneStart) handleError({noThrow, path, error: MISSING_SCENE_START, msg: `Missing SceneStart()`})
-    if (extension === '.lpscene' && !hasSceneEnd) handleError({noThrow, path, error: MISSING_SCENE_END, msg: `Missing SceneEnd()`})
+    //if (extension === '.lpscene' && !hasSceneStart) handleError({noThrow, path, error: MISSING_SCENE_START, msg: `Missing SceneStart()`})
+    if (extension === '.lpscene' && hasSceneStart && !hasSceneEnd) handleError({noThrow, path, error: MISSING_SCENE_END, msg: `Missing SceneEnd()`})
     if (inRandomBlock) handleError({noThrow, path, error: MISSING_RANDOM_END, msg: `Missing EndRandom`})
     return source
 }
