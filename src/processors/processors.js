@@ -34,7 +34,7 @@ const getDialog = (str) => {
 }
 const getNonDialog = (str) => {
     const dialog = getDialog(str.trimRight())
-    return str.replace(dialog, '')
+    return str.replace(dialog, '').split('//')[0]
 }
 const countChar = (str, char) => (str.match(new RegExp(`\\${char}`, 'g')) || []).length
 
@@ -53,6 +53,7 @@ const checkDialogue = ({line, path, ln = '-', noThrow}) => {
 }
 
 const processOperands = (source, path, extension, noThrow) => {
+    if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest') return source
     return source.map((line, i) => {
         const ln = i + 1
         // const dialog = getDialog(line)
@@ -85,25 +86,27 @@ const validateSyntax = ({source, path, name, extension, size, type, noThrow = tr
         if (line.trim().toLowerCase() === 'scenestart()') {
             if (hasSceneStart) handleError({noThrow, ln, path, error: MULTIPLE_SCENE_START, msg: `Multiple SceneStart()`})
             hasSceneStart = true
-        } else if (line.trim().toLowerCase() === 'sceneend()') {
-            if (hasSceneEnd) handleError({noThrow, ln, path, error: MULTIPLE_SCENE_END, msg: `Multiple SceneStart()`})
+        }
+        else if (line.trim().toLowerCase() === 'sceneend()') {
+            // if (hasSceneEnd) handleError({noThrow, ln, path, error: MULTIPLE_SCENE_END, msg: `Multiple SceneEnd()`})
             hasSceneEnd = true
-        } else if (line.trim().toLowerCase() === 'random') {
+        }
+        else if (line.trim().toLowerCase() === 'random') {
             if (inRandomBlock) handleError({noThrow, ln, path, error: NESTED_RANDOM, msg: `Nested Random`})
             inRandomBlock = true
             randomIndent = getIndent(line)
         } else if (line.trim().toLowerCase() === 'endrandom') {
             inRandomBlock = false
         } else if (inRandomBlock && indent < (randomIndent + 2)) {
-            handleError({noThrow, level: 'warn', ln, path, error: INVALID_RANDOM_INDENT, msg: `Invalid Random indent`})
+            handleError({noThrow, level: 'info', ln, path, error: INVALID_RANDOM_INDENT, msg: `Invalid Random indent`})
         }
         if (line.includes('"')) checkDialogue({line, path, ln, noThrow})
-        checkSyntaxPair({line, path, ln, left: "[", right: "]"})
-        checkSyntaxPair({line, path, ln, left: "(", right: ")"})
+        checkSyntaxPair({noThrow, line, path, ln, left: "[", right: "]"})
+        checkSyntaxPair({noThrow, line, path, ln, left: "(", right: ")"})
     })
 
     if (extension === '.lpscene' && !hasSceneStart) handleError({noThrow, path, error: MISSING_SCENE_START, msg: `Missing SceneStart()`})
-    if (extension === '.lpscene' && !hasSceneEnd) handleError({noThrow, path, error: MISSING_SCENE_END, msg: `Missing SceneStart()`})
+    if (extension === '.lpscene' && !hasSceneEnd) handleError({noThrow, path, error: MISSING_SCENE_END, msg: `Missing SceneEnd()`})
     if (inRandomBlock) handleError({noThrow, path, error: MISSING_RANDOM_END, msg: `Missing EndRandom`})
     return source
 }
