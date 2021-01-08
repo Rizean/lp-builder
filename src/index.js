@@ -5,8 +5,8 @@ const path = require('path')
 const logger = require('./Logger')({level: 'warning'})
 const build = require('./build')
 
-const resolveOutPath = (buildPath) => path.resolve(__dirname, buildPath)
-const resolveInPath = (sourcePath) => path.resolve(__dirname, sourcePath)
+const resolveOutPath = (buildPath) => path.resolve(process.cwd(), buildPath)
+const resolveInPath = (sourcePath) => path.resolve(process.cwd(), sourcePath)
 
 yargs(hideBin(process.argv))
     .command('build <buildPath> <sourcePath>', 'Builds all files in source path and outputs them to the build path.', (yargs) => {
