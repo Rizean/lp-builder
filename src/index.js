@@ -2,6 +2,7 @@ const PACKAGE = require('../package.json')
 const yargs = require('yargs/yargs')
 const {hideBin} = require('yargs/helpers')
 const path = require('path')
+const logger = require('./Logger')({level: 'warn'})
 const build = require('./build')
 
 const resolveOutPath = (buildPath) => path.resolve(__dirname, buildPath)
