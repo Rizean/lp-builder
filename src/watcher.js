@@ -1,41 +1,42 @@
 const chokidar = require('chokidar')
 const build = require('./build')
-const log = console.log.bind(console)
+
 const IGNORED = /(^|[\/\\])\../
+const logger = require('./Logger')({level: 'warning'})
 
 let handle = undefined
 let countStart = 5
 let count = 5
 
 const countDown = ({buildPath, sourcePath}) => {
-    if (handle) log('Change detected restarting build timer.')
+    if (handle) logger.notice('Change detected restarting build timer.')
     clearInterval(handle)
     count = countStart
     handle = setInterval(() => {
-        log(`Building in ${count--}`)
+        logger.notice(`Building in ${count--}`)
         if (count === 0) {
             clearInterval(handle)
             handle = undefined
-            log('Starting build...')
-            build(buildPath, sourcePath).catch(console.error)
+            logger.notice('Starting build...')
+            build(buildPath, sourcePath).catch(logger.error)
         }
     })
 }
 
 const onChangeHandler = ({buildPath, sourcePath, error, event, path, stats}) => {
-    if (error) return log(`Watcher error: ${error}`)
-    if (event === 'addDir') log(`Directory ${path} has been added`)
-    if (event === 'unlinkDir') log(`Directory ${path} has been added`)
-    if (event === 'unlinkDir') log(`Directory ${path} has been added`)
+    if (error) return logger.error(`Watcher error: ${error}`)
+    if (event === 'addDir') logger.notice(`Directory ${path} has been added`)
+    if (event === 'unlinkDir') logger.notice(`Directory ${path} has been added`)
+    if (event === 'unlinkDir') logger.notice(`Directory ${path} has been added`)
     if (event === 'change') {
-        if (stats) log(`File ${path} changed size to ${stats.size}`)
-        else log(`File ${path} changed`)
+        if (stats) logger.notice(`File ${path} changed size to ${stats.size}`)
+        else logger.notice(`File ${path} changed`)
     }
     if (event === 'ready') {
-        log('Initial scan complete. Running initial build. Ready for changes')
+        logger.notice('Initial scan complete. Running initial build. Ready for changes')
         return build(buildPath, sourcePath)
-            .then(() => log('Initial build complete. Ready for changes'))
-            .catch(console.error)
+            .then(() => logger.notice('Initial build complete. Ready for changes'))
+            .catch(logger.error)
     }
     countDown({buildPath, sourcePath})
 }
@@ -61,7 +62,7 @@ const watcher = ({buildPath, sourcePath, ignored = IGNORED, legacyWatch = false,
         .on('ready', () => onChangeHandler({event: 'ready', buildPath, sourcePath}))
         .on('change', (path, stats) => onChangeHandler({event: 'change', path, stats, buildPath, sourcePath}))
     // .on('raw', (event, path, details) => { // internal
-    //     log('Raw event info:', event, path, details);
+    //     logger.notice('Raw event info:', event, path, details);
     // })
 }
 

@@ -2,7 +2,7 @@ const PACKAGE = require('../package.json')
 const yargs = require('yargs/yargs')
 const {hideBin} = require('yargs/helpers')
 const path = require('path')
-const logger = require('./Logger')({level: 'warn'})
+const logger = require('./Logger')({level: 'warning'})
 const build = require('./build')
 
 const resolveOutPath = (buildPath) => path.resolve(__dirname, buildPath)
@@ -21,7 +21,7 @@ yargs(hideBin(process.argv))
             .positional('buildPath', {describe: 'build path', type: 'string'})
             .positional('sourcePath', {describe: 'source path', type: 'string'})
     }, ({buildPath, sourcePath}) => {
-        console.log('todo: watch', buildPath, sourcePath)
+        logger.warn('todo: watch', buildPath, sourcePath)
     })
     .command('check <buildPath> <sourcePath>', 'Syntax is the same as build, but will only output the paths.', (yargs) => {
         yargs

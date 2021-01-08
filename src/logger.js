@@ -25,7 +25,7 @@ class Logger {
     }
 
     log(level, message) {
-        if (message instanceof Error) return this._logger[level](message.message, {stack: message.stack})
+        if (message instanceof Error) return this._logger[level](`${message.message}\n${message.stack}`)
         this._logger[level](message)
     }
 

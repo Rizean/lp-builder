@@ -9,12 +9,11 @@ const buildPhaseFinal = async ({tree, buildPath, sourcePath, options = {}, noThr
             if (child.type === 'file') {
 
                 const outPath = `${buildPath}${child.path.replace(sourcePath, '')}`
-                if (child.extension === '.lpinclude') return console.notice(`Writing: ${outPath} -- Skipped!`)
-                console.info(`Writing: ${outPath}`)
+                if (child.extension === '.lpinclude') return logger.notice(`Writing: ${outPath} -- Skipped!`)
+                logger.info(`Writing: ${outPath}`)
                 fs.outputFile(outPath, child.source.join(lineBreak))
                 return child
             } else if (child.type === 'directory') {
-                // console.log('directory buildPhaseFinal', JSON.stringify(child,null,2))
                 return buildPhaseFinal({tree: child, buildPath, sourcePath, noThrow})
             } else throw new Error(`Unknown Type! Type: ${child.type}`)
         }))

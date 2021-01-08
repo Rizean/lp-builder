@@ -1,4 +1,5 @@
 const logger = require('../Logger')()
+const handleError = require('../handleError')
 const {
     INVALID_PAIR, INVALID_DIALOGUE, INVALID_OPERAND, MISSING_SCENE_START, MULTIPLE_SCENE_START, MISSING_SCENE_END, MULTIPLE_SCENE_END, NESTED_RANDOM,
     INVALID_RANDOM_INDENT, MISSING_RANDOM_END, MISSING_CHOICE_LINE_BREAK
@@ -23,11 +24,7 @@ const OPERANDS = [
     {syntax: '&&', regex: /(&+)/g, expect: 2, replace: '&&'},
     {syntax: '||', regex: /(\|+)/g, expect: 2, replace: '||'},
 ]
-const handleError = ({ln, path, error, msg, level = 'error', noThrow}) => {
-    let message = `FILE: ${path}  LINE: ${ln}  ${level.toUpperCase()}: ${error} - ${msg}`
-    if (noThrow || level === 'warn') return logger[level](message)
-    throw new Error(message)
-}
+
 const getIndent = (str) => str.length - str.trimLeft().length
 const getDialog = (str) => {
     const strRegex = /.*(".*")/
@@ -72,8 +69,7 @@ const processOperands = (source, path, extension, noThrow) => {
         return line.replace(code, modified)
     })
 }
-// {source, path, name, extension, size, type, noThrow = true}
-// const validateSyntax = ({src, sourcePath, extension, noThrow = true}) => {
+
 const validateSyntax = ({source, path, name, extension, size, type, noThrow = true}) => {
     logger.info(`Validating Syntax: `, path)
     let hasSceneStart = false
@@ -81,12 +77,10 @@ const validateSyntax = ({source, path, name, extension, size, type, noThrow = tr
     let inRandomBlock = false
     let randomIndent = 0
 
-    // const lines = src.split('\n')
     source.forEach((line, i) => {
         const ln = i + 1
         const indent = getIndent(line)
         //if (inRandomBlock && indent < (randomIndent + 2)) logger.warn(`${sourcePath} has invalid Random indent on line: ${ln}`)
-        // handleError({noThrow, ln, path, error: INVALID_DIALOGUE, msg: `Expected two double quotation marks but found ${count}`})
 
         if (line.trim().toLowerCase() === 'scenestart()') {
             if (hasSceneStart) handleError({noThrow, ln, path, error: MULTIPLE_SCENE_START, msg: `Multiple SceneStart()`})
@@ -114,8 +108,6 @@ const validateSyntax = ({source, path, name, extension, size, type, noThrow = tr
     return source
 }
 
-// const choices = (src, sourcePath) => {
-// {source, path, name, extension, size, type, noThrow = true}
 const choices = ({source, path, name, extension, size, type, noThrow = true}) => {
     const out = []
     const choiceRegex = /\s*\d+::/
@@ -145,7 +137,6 @@ const replaceTabs = ({source, path, name, extension, size, type, noThrow = true,
 }
 
 module.exports = {
-    // replaceTabs: (src, spaces = '    ') => src.replace(/\t/g, spaces),
     replaceTabs,
     choices,
     validateSyntax,

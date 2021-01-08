@@ -15,7 +15,7 @@ const buildPhaseThree = async (tree, noThrow) => {
     //         else throw new Error(`Unknown Type! Type: ${child.type}`)
     //     }))
     // } catch (e) {
-    //     console.error(e)
+    //     logger.error(e)
     // }
     return tree
 }
