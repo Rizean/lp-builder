@@ -23,7 +23,7 @@ module.exports = {
                     handleError({noThrow, ln: '-', path, error: UNKNOWN_INCLUDE, msg: `Ignoring include file ith same name.`})
                     return line
                 }
-                return includeMap.get(include).map(line => `${indent}${line}`).join('\n')
+                return includeMap.get(include).map(line => `${indent}${line}`).join('\r\n')
             }
             return line
         })
