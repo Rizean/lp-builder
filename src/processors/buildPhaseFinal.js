@@ -3,7 +3,7 @@ const logger = require('../Logger')()
 
 const buildPhaseFinal = async ({tree, buildPath, sourcePath, options = {}, noThrow}) => {
     logger.info('BUILD: Phase Final')
-    const {lineBreak = '\n'} = options
+    const {lineBreak = '\r\n'} = options
     try {
         tree.children = await Promise.all(tree.children.map(async child => {
             if (child.type === 'file') {

@@ -53,7 +53,7 @@ const checkDialogue = ({line, path, ln = '-', noThrow}) => {
 }
 
 const processOperands = (source, path, extension, noThrow) => {
-    if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest') return source
+    if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt'  || extension === '.md') return source
     return source.map((line, i) => {
         const ln = i + 1
         // const dialog = getDialog(line)
@@ -72,6 +72,8 @@ const processOperands = (source, path, extension, noThrow) => {
 }
 
 const validateSyntax = ({source, path, name, extension, size, type, noThrow = true}) => {
+    // if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt'  || extension === '.md') return source
+    if (!extension.includes('.lp') || extension === '.txt'  || extension === '.md') return source
     logger.info(`Validating Syntax: `, path)
     let hasSceneStart = false
     let hasSceneEnd = false
