@@ -10,7 +10,8 @@ const buildPhaseOne = async (tree, noThrow) => {
     try {
         tree.children = await Promise.all(tree.children.map(async child => {
             if (child.type === 'file') {
-                child.source = (await fs.readFile(child.path, 'utf-8')).split(/[\r\n]+/g)
+                // TODO Line split may not work on MAC but all files should be in \r\n as that is what LifePlay requires
+                child.source = (await fs.readFile(child.path, 'utf-8')).split(/\r?\n/g)
                 child.source = replaceTabs({...child, noThrow})
                 parseIncludes({...child})
                 return child
