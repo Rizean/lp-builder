@@ -1,6 +1,6 @@
 {
   "name": "lp-builder",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
@@ -25,8 +25,9 @@
     "build:linux": "./node_modules/.bin/pkg src/index.js --output ./dist/lpBuilder-linux-x64 --targets node14-linux-x64",
     "build:mac": "./node_modules/.bin/pkg src/index.js --output ./dist/lpBuilder-mac-x64 --targets node14-mac-x64",
     "test:manual": "node src build ./results ./tests/Modules",
-    "test:core": "node src build ./results D:\\other\\LifePlay\\LifePlay\\Content\\Modules",
-    "test:core:check": "node src check ./results D:\\other\\LifePlay\\LifePlay\\Content\\Modules",
-    "test:core:check2": "node src check . ./tests/Modules"
+    "test:core": "node src build ./results D:\\other\\LifePlay\\LifePlay\\Content\\Modules -l",
+    "test:core:x": "node src build ./results D:\\other\\LifePlay\\LifePlay\\Content\\Modules --xb --xs --ufe -l",
+    "test:core:check": "node src check ./results D:\\other\\LifePlay\\LifePlay\\Content\\Modules -l",
+    "test:core:check2": "node src check . ./tests/Modules --xb --xs -l"
   }
 }

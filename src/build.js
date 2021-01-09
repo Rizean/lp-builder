@@ -7,19 +7,19 @@ const buildPhaseThree = require('./processors/buildPhaseThree')
 const buildPhaseFour = require('./processors/buildPhaseFour')
 const buildPhaseFinal = require('./processors/buildPhaseFinal')
 
-const build = async (buildPath, sourcePath, noThrow) => {
+const build = async (buildPath, sourcePath, options = {experimentalBoolean: false, experimentalSyntax: false, noThrow: false, log: false}) => {
     logger.notice(`Building source: ${sourcePath}  destination: ${buildPath}`)
 
     try {
         let tree = dirTree(sourcePath)
-        tree = await buildPhaseOne(tree)
-        tree = await buildPhaseTwo(tree)
-        tree = await buildPhaseFour(tree)
-        if (true){
+        tree = await buildPhaseOne({tree, ...options})
+        tree = await buildPhaseTwo({tree, ...options})
+        tree = await buildPhaseFour({tree, ...options})
+        if (options.log){
             const outPath = `${buildPath}/debug.json`
             fs.outputFile(outPath, JSON.stringify(tree,null,2))
         }
-        await buildPhaseFinal({tree, buildPath, sourcePath, noThrow})
+        await buildPhaseFinal({tree, ...options, buildPath, sourcePath})
 
     } catch (e) {
         logger.error(`BUILD FAILED!`)

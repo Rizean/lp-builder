@@ -1,4 +1,6 @@
 const logger = require('../Logger')()
+const {getIndent, getDialog, getNonDialog, countChar} = require('./tools')
+const {booleanOperands} = require('./advanceChecks')
 const handleError = require('../handleError')
 const {
     INVALID_PAIR, INVALID_DIALOGUE, INVALID_OPERAND, MISSING_SCENE_START, MULTIPLE_SCENE_START, MISSING_SCENE_END, MULTIPLE_SCENE_END, NESTED_RANDOM,
@@ -25,24 +27,13 @@ const OPERANDS = [
     {syntax: '||', regex: /(\|+)/g, expect: 2, replace: '||'},
 ]
 
-const getIndent = (str) => str.length - str.trimLeft().length
-const getDialog = (str) => {
-    const strRegex = /.*(".*")/
-    if (!strRegex.test(str)) return ''
-    const [, dialog] = strRegex.exec(str)
-    return dialog
-}
-const getNonDialog = (str) => {
-    const dialog = getDialog(str.trimRight())
-    return str.replace(dialog, '').split('//')[0]
-}
-const countChar = (str, char) => (str.match(new RegExp(`\\${char}`, 'g')) || []).length
 
 const checkSyntaxPair = ({line, path, ln, left, right, noThrow}) => {
-    const countRight = countChar(line, right)
-    const countLeft = countChar(line, left)
+    const code = getNonDialog(line)
+    const countRight = countChar(code, right)
+    const countLeft = countChar(code, left)
     if (countRight === countLeft) return true
-    handleError({noThrow, ln, path, error: INVALID_PAIR, msg: `Found left(${left}) ${countLeft} and right(${right}) ${countRight}`})
+    handleError({noThrow, ln, path, error: INVALID_PAIR, msg: `Found left--> ${left}:${countLeft} and right--> ${right}:${countRight}  line: -->${line}<--`})
 }
 
 const checkDialogue = ({line, path, ln = '-', noThrow}) => {
@@ -53,7 +44,7 @@ const checkDialogue = ({line, path, ln = '-', noThrow}) => {
 }
 
 const processOperands = (source, path, extension, noThrow) => {
-    if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt'  || extension === '.md') return source
+    if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt' || extension === '.md') return source
     return source.map((line, i) => {
         const ln = i + 1
         // const dialog = getDialog(line)
@@ -73,7 +64,7 @@ const processOperands = (source, path, extension, noThrow) => {
 
 const validateSyntax = ({source, path, name, extension, size, type, noThrow = true}) => {
     // if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt'  || extension === '.md') return source
-    if (!extension.includes('.lp') || extension === '.txt'  || extension === '.md') return source
+    if (!extension.includes('.lp') || extension === '.txt' || extension === '.md') return source
     logger.info(`Validating Syntax: `, path)
     let hasSceneStart = false
     let hasSceneEnd = false
@@ -88,12 +79,10 @@ const validateSyntax = ({source, path, name, extension, size, type, noThrow = tr
         if (line.trim().toLowerCase() === 'scenestart()') {
             // if (hasSceneStart) handleError({noThrow, ln, path, error: MULTIPLE_SCENE_START, msg: `Multiple SceneStart()`})
             hasSceneStart = true
-        }
-        else if (line.trim().toLowerCase() === 'sceneend()') {
+        } else if (line.trim().toLowerCase() === 'sceneend()') {
             // if (hasSceneEnd) handleError({noThrow, ln, path, error: MULTIPLE_SCENE_END, msg: `Multiple SceneEnd()`})
             hasSceneEnd = true
-        }
-        else if (line.trim().toLowerCase() === 'random') {
+        } else if (line.trim().toLowerCase() === 'random') {
             if (inRandomBlock) handleError({noThrow, ln, path, error: NESTED_RANDOM, msg: `Nested Random`})
             inRandomBlock = true
             randomIndent = getIndent(line)

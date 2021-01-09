@@ -5,7 +5,7 @@ const logger = require('../Logger')()
 const {replaceTabs, choices, validateSyntax, processOperands} = require('./processors.js')
 const {parseIncludes, processIncludes} = require('./include')
 
-const buildPhaseOne = async (tree, noThrow) => {
+const buildPhaseOne = async ({tree, experimentalBoolean, experimentalSyntax, noThrow}) => {
     logger.info('BUILD: Phase One')
     try {
         tree.children = await Promise.all(tree.children.map(async child => {
@@ -16,7 +16,7 @@ const buildPhaseOne = async (tree, noThrow) => {
                 parseIncludes({...child})
                 return child
             } else if (child.type === 'directory') {
-                return buildPhaseOne(child)
+                return buildPhaseOne({tree: child, experimentalBoolean, experimentalSyntax, noThrow})
             } else throw new Error(`Unknown Type! Type: ${child.type}`)
         }))
     } catch (e) {

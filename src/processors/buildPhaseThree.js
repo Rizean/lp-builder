@@ -1,6 +1,6 @@
 const logger = require('../Logger')()
 
-const buildPhaseThree = async (tree, noThrow) => {
+const buildPhaseThree = async ({tree, experimentalBoolean, experimentalSyntax, noThrow}) => {
     logger.info('BUILD: Phase Three')
     // TODO Templates
     // try {
