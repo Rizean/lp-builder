@@ -10,8 +10,16 @@ const getNonDialog = (str) => {
     return str.replace(dialog, '').split('//')[0]
 }
 const countChar = (str, char) => (str.match(new RegExp(`\\${char}`, 'g')) || []).length
+const countExpression = (str, regex) => (str.match(regex) || []).length
 
 const checkModified = (orig, modified) => orig.replace(/\s/g, '').length !== modified.replace(/\s/g, '').length
+
+const isTriggerConditions = (code) => {
+    const triggerConditions = ['WHAT:', 'WHERE:', 'WHEN:', 'WHO:', 'OTHER:']
+    // going with trim for now to handle leading spaces which I think is still valid
+    // todo leading spaces on triggers might be an error?
+    return triggerConditions.some(trigger=>code.trim().startsWith(trigger))
+}
 
 module.exports = {
     getIndent,
@@ -19,4 +27,6 @@ module.exports = {
     getNonDialog,
     countChar,
     checkModified,
+    countExpression,
+    isTriggerConditions,
 }
