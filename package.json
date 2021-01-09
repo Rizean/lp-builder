@@ -1,6 +1,6 @@
 {
   "name": "lp-builder",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "main": "src/index.js",
   "license": "MIT",
   "dependencies": {
@@ -27,8 +27,8 @@
     "test:manual": "node src build ./results ./tests/Modules",
     "test:manual:x": "node src build ./results ./tests/Modules --xb --xs --ufe -l",
     "test:core": "node src build ./results D:\\other\\LifePlay\\LifePlay\\Content\\Modules -l",
-    "test:core:x": "node src build ./results D:\\other\\LifePlay\\LifePlay\\Content\\Modules --xb --xs --ufe -l",
+    "test:core:x": "node src build ./results D:\\\\other\\\\LifePlay\\\\LifePlay\\\\Content\\\\Modules --xb --xs --ufe -l -p data/patches20200109.js",
     "test:core:check": "node src check ./results D:\\other\\LifePlay\\LifePlay\\Content\\Modules -l",
-    "test:core:check2": "node src check . ./tests/Modules --xb --xs -l"
+    "test:core:check2": "node src check . ./tests/Modules --xb --xs -l -p data/patches20200109.js"
   }
 }

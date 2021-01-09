@@ -5,8 +5,7 @@ const path = require('path')
 const logger = require('./Logger')({level: 'warning'})
 const build = require('./build')
 
-const resolveOutPath = (buildPath) => path.resolve(process.cwd(), buildPath)
-const resolveInPath = (sourcePath) => path.resolve(process.cwd(), sourcePath)
+const resolvePath = (pathString) => path.resolve(process.cwd(), pathString)
 
 const buildOptions = (yargs) => {
     yargs
@@ -32,27 +31,39 @@ const buildOptions = (yargs) => {
             describe: 'write build to log file',
             type: 'boolean'
         })
+        .option('patch', {
+            alias: 'p',
+            describe: 'path to patch file',
+            type: 'string'
+        })
 }
 
 yargs(hideBin(process.argv))
     .command(
         'build <buildPath> <sourcePath>', 'Builds all files in source path and outputs them to the build path.',
         buildOptions,
-        ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log}) => {
-            build(resolveInPath(buildPath), resolveOutPath(sourcePath), {experimentalBoolean, experimentalSyntax, noThrow, log}).catch(console.error)
+        ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
+            build(resolvePath(buildPath), resolvePath(sourcePath), {
+                experimentalBoolean,
+                experimentalSyntax,
+                noThrow,
+                log,
+                patch: resolvePath(patch)
+            }).catch(console.error)
         })
     .command('watch <buildPath> <sourcePath>', 'Syntax is the same as build, but will automatically watch for changes to your input file and rebuild them dynamically.',
         buildOptions,
-        ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log}) => {
-            logger.warn('todo: watch', buildPath, sourcePath, {experimentalBoolean, experimentalSyntax, noThrow, log})
+        ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
+            logger.warn('todo: watch', buildPath, sourcePath, {experimentalBoolean, experimentalSyntax, noThrow, log, patch: resolvePath(patch)})
         })
     .command('check <buildPath> <sourcePath>', 'Syntax is the same as build, but will only output the paths.',
         buildOptions,
-        ({sourcePath, buildPath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log}) => {
-            console.log(`buildPath: ${resolveOutPath(buildPath)}`)
-            console.log(`sourcePath: ${resolveInPath(sourcePath)}`)
+        ({sourcePath, buildPath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
+            console.log(`buildPath: ${resolvePath(buildPath)}`)
+            console.log(`sourcePath: ${resolvePath(sourcePath)}`)
             console.log(`experimentalBoolean: ${experimentalBoolean}`)
             console.log(`experimentalSyntax: ${experimentalSyntax}`)
+            console.log(`patch: ${resolvePath(patch)}`)
         })
     .command('version', `Reports what version of LP Builder you are using.`, (argv) => console.log(`version ${PACKAGE.version}`))
     .demandCommand()
