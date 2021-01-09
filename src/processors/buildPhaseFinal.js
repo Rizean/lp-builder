@@ -9,7 +9,7 @@ const buildPhaseFinal = async ({tree, buildPath, sourcePath, options = {}, noThr
             if (child.type === 'file') {
 
                 const outPath = `${buildPath}${child.path.replace(sourcePath, '')}`
-                if (child.extension === '.lpinclude') return logger.notice(`Writing: ${outPath} -- Skipped!`)
+                if (child.extension === '.lpinclude') return logger.info(`Writing: ${outPath} -- Skipped!`)
                 logger.info(`Writing: ${outPath}`)
                 fs.outputFile(outPath, child.source.join(lineBreak))
                 return child
