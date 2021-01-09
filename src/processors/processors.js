@@ -1,10 +1,10 @@
 const logger = require('../Logger')()
-const {getIndent, getDialog, getNonDialog, countChar} = require('./tools')
+const {getIndent, getDialog, getNonDialog, countChar, countExpression, isTriggerConditions} = require('./tools')
 const {booleanOperands} = require('./advanceChecks')
 const handleError = require('../handleError')
 const {
     INVALID_PAIR, INVALID_DIALOGUE, INVALID_OPERAND, MISSING_SCENE_START, MULTIPLE_SCENE_START, MISSING_SCENE_END, MULTIPLE_SCENE_END, NESTED_RANDOM,
-    INVALID_RANDOM_INDENT, MISSING_RANDOM_END, MISSING_CHOICE_LINE_BREAK
+    INVALID_RANDOM_INDENT, MISSING_RANDOM_END, MISSING_CHOICE_LINE_BREAK, INVALID_IF_ELSE_ENDIF
 } = require('../errors')
 
 // const VALID_OPERANDS = [
@@ -130,9 +130,60 @@ const replaceTabs = ({source, path, name, extension, size, type, noThrow = true,
     return source.map(line => line.replace(/\t/g, indent))
 }
 
+const checkIfElseEndif = ({source, path, name, extension, size, type, noThrow = true}) => {
+    const skipExtensions = ['.lpcharacter', '.lpaddon', '.lpmod', '.lpquest', '.txt', '.md', '.lpstat']
+    if (!extension.includes('.lpscene')) return source
+
+    const checkIfElseEndIf = (code, counts = {if: 0, elseIf: 0, else: 0, endIf: 0}) => {
+        if (!code) return counts
+        const temp = {
+            if: countExpression(code, /(?:\b|^)if\b/ig),
+            elseIf: countExpression(code, /(?:\b|^)elseIf\b/ig),
+            else: countExpression(code, /(?:\b|^)else\s*$/ig),
+            endIf: countExpression(code, /(?:\b|^)endIf\s*$/ig),
+        }
+        counts.if      += temp.if
+        counts.elseIf  += temp.elseIf
+        counts.else    += temp.else
+        counts.endIf   += temp.endIf
+        return counts
+    }
+    // init our counts to zero by calling checkIfElseEndIf() without params feeding that into the initial reduce value
+    // let counts = checkIfElseEndIf()
+    let counts = source.reduce((counts, line) => {
+        if (isTriggerConditions(line)) return counts
+        return checkIfElseEndIf(getNonDialog(line), counts)
+    }, checkIfElseEndIf())
+
+    if (counts.if !== counts.endIf) {
+        handleError({
+            noThrow,
+            processor: 'checkIfElseEndif',
+            ln: '-',
+            level: 'error',
+            path,
+            error: INVALID_IF_ELSE_ENDIF,
+            msg: `If and EndIf counts do not match! If count: ${counts.if}  EndIf count: ${counts.endIf}`
+        })
+    } else if ((counts.elseIf > 0 || counts.else > 0) && counts.if === 0) {
+        handleError({
+            noThrow,
+            processor: 'checkIfElseEndif',
+            ln: '-',
+            level: 'error',
+            path,
+            error: INVALID_IF_ELSE_ENDIF,
+            msg: `Else or ElseIf detected but missing If and EndIf.`
+        })
+    }
+    return source
+}
+
+
 module.exports = {
     replaceTabs,
     choices,
     validateSyntax,
-    processOperands
+    processOperands,
+    checkIfElseEndif,
 }

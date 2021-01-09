@@ -1,0 +1,18 @@
+WHAT: none
+WHERE: none
+WHEN: 0 - 24
+WHO: none
+OTHER: none
+
+    SceneStart()
+    If true
+        "true"
+    ElseIf false
+        "false"
+    Else
+        "eh"
+
+
+    SceneEnd()
+    timeout(500, lp_test_scene)
+

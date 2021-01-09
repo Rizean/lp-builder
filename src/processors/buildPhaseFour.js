@@ -1,4 +1,4 @@
-const {replaceTabs, choices, validateSyntax, processOperands} = require('./processors')
+const {validateSyntax, checkIfElseEndif} = require('./processors')
 const logger = require('../Logger')()
 
 const buildPhaseFour = async ({tree, experimentalBoolean, experimentalSyntax, noThrow}) => {
@@ -7,6 +7,7 @@ const buildPhaseFour = async ({tree, experimentalBoolean, experimentalSyntax, no
         tree.children = await Promise.all(tree.children.map(async child => {
             if (child.type === 'file') {
                 child.source = validateSyntax({...child, noThrow})
+                child.source = checkIfElseEndif({...child, noThrow})
                 return child
             } else if (child.type === 'directory') {
                 return buildPhaseFour({tree: child, experimentalBoolean, experimentalSyntax, noThrow})
