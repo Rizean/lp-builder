@@ -7,17 +7,17 @@ const buildPhaseTwo = require('./processors/buildPhaseTwo')
 const buildPhaseFour = require('./processors/buildPhaseFour')
 const buildPhaseFinal = require('./processors/buildPhaseFinal')
 
-const build = async (buildPath, sourcePath, options = {experimentalBoolean: false, experimentalSyntax: false, noThrow: false, log: false, patch}) => {
-    logger.notice(`Building source: ${sourcePath}  destination: ${buildPath} patch: ${options.patch}`)
+const build = async ({buildPath, sourcePath, experimentalBoolean = false, experimentalSyntax = false, noThrow = false, log = false, patch}) => {
+    logger.notice(`Building source: ${sourcePath}  destination: ${buildPath} patch: ${patch}`)
     let patchCommands = []
-    if (options.patch) patchCommands = require(options.patch)
+    if (patch) patchCommands = require(patch)
 
     try {
         let tree = dirTree(sourcePath)
-        tree = await buildPhaseOne({tree, ...options, patchCommands})
-        tree = await buildPhaseTwo({tree, ...options, patchCommands})
-        tree = await buildPhaseFour({tree, ...options, patchCommands})
-        tree = await buildPhaseFinal({tree, ...options, buildPath, sourcePath})
+        tree = await buildPhaseOne({tree, experimentalBoolean, experimentalSyntax, noThrow, log, patchCommands})
+        tree = await buildPhaseTwo({tree, experimentalBoolean, experimentalSyntax, noThrow, log, patchCommands})
+        tree = await buildPhaseFour({tree, experimentalBoolean, experimentalSyntax, noThrow, log, patchCommands})
+        tree = await buildPhaseFinal({tree, buildPath, sourcePath, experimentalBoolean, experimentalSyntax, noThrow, log, patchCommands})
         const outPath = `${buildPath}/build.json`
         fs.outputFile(outPath, JSON.stringify(tree, null, 2))
 

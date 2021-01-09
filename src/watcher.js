@@ -8,8 +8,8 @@ let handle = undefined
 let countStart = 5
 let count = 5
 
-const countDown = ({buildPath, sourcePath}) => {
-    if (handle) logger.notice('Change detected restarting build timer.')
+const countDown = (buildOptions) => {
+    // if (handle) logger.notice('Change detected restarting build timer.')
     clearInterval(handle)
     count = countStart
     handle = setInterval(() => {
@@ -18,30 +18,33 @@ const countDown = ({buildPath, sourcePath}) => {
             clearInterval(handle)
             handle = undefined
             logger.notice('Starting build...')
-            build(buildPath, sourcePath).catch(logger.error)
+            build(buildOptions).catch(logger.error)
         }
-    })
+    }, 1000)
 }
 
-const onChangeHandler = ({buildPath, sourcePath, error, event, path, stats}) => {
+const onChangeHandler = ({buildOptions, error, event, path, stats}) => {
     if (error) return logger.error(`Watcher error: ${error}`)
-    if (event === 'addDir') logger.notice(`Directory ${path} has been added`)
-    if (event === 'unlinkDir') logger.notice(`Directory ${path} has been added`)
-    if (event === 'unlinkDir') logger.notice(`Directory ${path} has been added`)
+    // if (event === 'addDir') logger.notice(`Directory ${path} has been added`)
+    // if (event === 'unlinkDir') logger.notice(`Directory ${path} has been added`)
+    // if (event === 'unlinkDir') logger.notice(`Directory ${path} has been added`)
     if (event === 'change') {
         if (stats) logger.notice(`File ${path} changed size to ${stats.size}`)
         else logger.notice(`File ${path} changed`)
     }
     if (event === 'ready') {
         logger.notice('Initial scan complete. Running initial build. Ready for changes')
-        return build(buildPath, sourcePath)
+        clearInterval(handle)
+        return build(buildOptions)
             .then(() => logger.notice('Initial build complete. Ready for changes'))
             .catch(logger.error)
+    } else {
+        countDown(buildOptions)
     }
-    countDown({buildPath, sourcePath})
+
 }
 
-const watcher = ({buildPath, sourcePath, ignored = IGNORED, legacyWatch = false, pollingInterval = 1000, delay = 5000}) => {
+const watcher = ({buildOptions, ignored = IGNORED, legacyWatch = false, pollingInterval = 1000, delay = 5000}) => {
     countStart = delay / 1000
     const watchOptions = {
         ignorePermissionErrors: true,
@@ -52,15 +55,15 @@ const watcher = ({buildPath, sourcePath, ignored = IGNORED, legacyWatch = false,
     }
 
     // Initialize watcher.
-    const watcher = chokidar.watch(sourcePath, watchOptions)
+    const watcher = chokidar.watch(buildOptions.sourcePath, watchOptions)
 
     // More possible events.
     watcher
-        .on('addDir', path => onChangeHandler({event: 'addDir', path, buildPath, sourcePath}))
-        .on('unlinkDir', path => onChangeHandler({event: 'unlinkDir', path, buildPath, sourcePath}))
-        .on('error', error => onChangeHandler({event: 'change', error, buildPath, sourcePath}))
-        .on('ready', () => onChangeHandler({event: 'ready', buildPath, sourcePath}))
-        .on('change', (path, stats) => onChangeHandler({event: 'change', path, stats, buildPath, sourcePath}))
+        .on('addDir', path => onChangeHandler({event: 'addDir', path, buildOptions}))
+        .on('unlinkDir', path => onChangeHandler({event: 'unlinkDir', path, buildOptions}))
+        .on('error', error => onChangeHandler({event: 'change', error, buildOptions}))
+        .on('ready', () => onChangeHandler({event: 'ready', buildOptions}))
+        .on('change', (path, stats) => onChangeHandler({event: 'change', path, stats, buildOptions}))
     // .on('raw', (event, path, details) => { // internal
     //     logger.notice('Raw event info:', event, path, details);
     // })

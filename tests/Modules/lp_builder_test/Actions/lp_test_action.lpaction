@@ -9,4 +9,4 @@ EFFECTS:  money -25 (START), intoxication +100 (DURATION), mood -1 (INTERRUPTED)
 CONDITIONS:
 MOVE_FIRST: true
 SCENE_ALWAYS: lp_test_scene
-ANIMATION:
+ANIMATION: // this is a ...

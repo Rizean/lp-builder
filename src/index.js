@@ -4,10 +4,11 @@ const {hideBin} = require('yargs/helpers')
 const path = require('path')
 const logger = require('./Logger')({level: 'warning'})
 const build = require('./build')
+const watcher = require('./watcher')
 
 const resolvePath = (pathString) => path.resolve(process.cwd(), pathString)
 
-const buildOptions = (yargs) => {
+const getBuildOptions = (yargs) => {
     yargs
         .positional('buildPath', {describe: 'build path', type: 'string'})
         .positional('sourcePath', {describe: 'source path', type: 'string'})
@@ -41,23 +42,35 @@ const buildOptions = (yargs) => {
 yargs(hideBin(process.argv))
     .command(
         'build <buildPath> <sourcePath>', 'Builds all files in source path and outputs them to the build path.',
-        buildOptions,
+        getBuildOptions,
         ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
-            build(resolvePath(buildPath), resolvePath(sourcePath), {
+            const buildOptions = {
+                buildPath: resolvePath(buildPath),
+                sourcePath: resolvePath(sourcePath),
                 experimentalBoolean,
                 experimentalSyntax,
                 noThrow,
                 log,
                 patch: resolvePath(patch)
-            }).catch(console.error)
+            }
+            build(buildOptions).catch(console.error)
         })
     .command('watch <buildPath> <sourcePath>', 'Syntax is the same as build, but will automatically watch for changes to your input file and rebuild them dynamically.',
-        buildOptions,
+        getBuildOptions,
         ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
-            logger.warn('todo: watch', buildPath, sourcePath, {experimentalBoolean, experimentalSyntax, noThrow, log, patch: resolvePath(patch)})
+        const buildOptions = {
+            buildPath: resolvePath(buildPath),
+            sourcePath: resolvePath(sourcePath),
+            experimentalBoolean,
+            experimentalSyntax,
+            noThrow,
+            log,
+            patch: resolvePath(patch)
+        }
+            watcher({buildOptions})
         })
     .command('check <buildPath> <sourcePath>', 'Syntax is the same as build, but will only output the paths.',
-        buildOptions,
+        getBuildOptions,
         ({sourcePath, buildPath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
             console.log(`buildPath: ${resolvePath(buildPath)}`)
             console.log(`sourcePath: ${resolvePath(sourcePath)}`)

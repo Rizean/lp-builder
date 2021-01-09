@@ -14,7 +14,9 @@
 ### Core
 1. Build: `lpBuilder build <buildPath> <sourcePath>`
 2. Check Paths: `lpBuilder check <buildPath> <sourcePath>`
-3. TODO: Watch: `lpBuilder watch <buildPath> <sourcePath>`
+3. Watch: `lpBuilder watch <buildPath> <sourcePath>`
+
+Common use case: `lpBuilder watch D:\other\LifePlay\LifePlay\Content\Modules\my_module D:\projects\my_lifeplay_project\src\Modules\my_module --ufe`
 
 ### Options
 #### Flags

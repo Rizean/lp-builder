@@ -199,3 +199,5 @@ build/
 !/src/libs/tags/
 /examples/
 /results/
+build.json
+build.log

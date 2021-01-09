@@ -15,7 +15,14 @@ const buildPhaseFinal = async ({tree, buildPath, sourcePath, options = {}, noThr
                 logger.info(`Writing: ${outPath}`)
                 const data = child.source.join(LINEBREAK)
                 child.buildHash = hashString(data)
-                fs.outputFile(outPath, data)
+                // try {
+                    fs.outputFile(outPath, data)
+                // } catch (e) {
+                //     if (e) {
+                //         logger.error(`Failed to write file! source: ${child.path}  target: ${outPath}`)
+                //     }
+                // }
+
                 return child
             } else if (child.type === 'directory') {
                 return buildPhaseFinal({tree: child, buildPath, sourcePath, noThrow})
