@@ -1,3 +1,6 @@
+const crypto = require('crypto')
+
+
 const getIndent = (str) => str.length - str.trimLeft().length
 const getDialog = (str) => {
     const strRegex = /.*(".*")/
@@ -21,6 +24,8 @@ const isTriggerConditions = (code) => {
     return triggerConditions.some(trigger=>code.trim().startsWith(trigger))
 }
 
+const hashString = (str) => crypto.createHash('md5').update(str).digest("hex")
+
 module.exports = {
     getIndent,
     getDialog,
@@ -29,4 +34,5 @@ module.exports = {
     checkModified,
     countExpression,
     isTriggerConditions,
+    hashString,
 }

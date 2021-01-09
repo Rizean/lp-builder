@@ -1,9 +1,11 @@
 const fs = require('fs-extra')
 const logger = require('../Logger')()
+const LINEBREAK = '\r\n'
+const {hashString} = require('./tools')
 
 const buildPhaseFinal = async ({tree, buildPath, sourcePath, options = {}, noThrow}) => {
     logger.info('BUILD: Phase Final')
-    const {lineBreak = '\r\n'} = options
+
     try {
         tree.children = await Promise.all(tree.children.map(async child => {
             if (child.type === 'file') {
@@ -11,7 +13,9 @@ const buildPhaseFinal = async ({tree, buildPath, sourcePath, options = {}, noThr
                 const outPath = `${buildPath}${child.path.replace(sourcePath, '')}`
                 if (child.extension === '.lpinclude') return logger.info(`Writing: ${outPath} -- Skipped!`)
                 logger.info(`Writing: ${outPath}`)
-                fs.outputFile(outPath, child.source.join(lineBreak))
+                const data = child.source.join(LINEBREAK)
+                child.buildHash = hashString(data)
+                fs.outputFile(outPath, data)
                 return child
             } else if (child.type === 'directory') {
                 return buildPhaseFinal({tree: child, buildPath, sourcePath, noThrow})
