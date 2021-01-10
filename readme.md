@@ -23,11 +23,11 @@ Common use case: `lpbuilder watch D:\projects\my_lifeplay_project\src\Modules\my
 
 ### Options
 #### Flags
-  * `-l` `--log` - write build to log file
-  * `-ufe` `--unFatalErrors` - errors are not fatal
-  * `-xb` `--experimentalBoolean` - experimental boolean operand repair
-  * `-xs` `--experimentalSyntax` - very experimental syntax repair
-  * `-p <patchFile.js>` `--patch <patchFile.js>` - very experimental syntax repair
+  * `--l` `--log` - write build to log file
+  * `--ufe` `--unFatalErrors` - errors are not fatal
+  * `--xb` `--experimentalBoolean` - experimental boolean operand repair
+  * `--xs` `--experimentalSyntax` - very experimental syntax repair
+  * `--p <patchFile.js>` `--patch <patchFile.js>` - very experimental syntax repair
 
 #### Patch File Format and Commands
 There is an included patch file in the data directory `patches20200109.js` that addresses most current issues as of 2020/01/09
