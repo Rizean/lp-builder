@@ -1,0 +1,18 @@
+WHAT: none
+WHERE: none
+WHEN: 0 - 24
+WHO: none
+OTHER: none
+
+    SceneStart()
+    #include lp_include_with_nested_include
+
+    If A | B || C & E
+        "missing an |"
+    Endif
+    Random
+        "a"
+        "b"
+    EndRandom
+    SceneEnd()
+    timeout(500, lp_test_scene)
