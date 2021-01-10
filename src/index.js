@@ -53,7 +53,7 @@ yargs(hideBin(process.argv))
                 experimentalSyntax,
                 noThrow,
                 log,
-                patch: resolvePath(patch)
+                patch: patch ? resolvePath(patch) : undefined
             }
             build(buildOptions).catch(console.error)
         })
@@ -67,7 +67,7 @@ yargs(hideBin(process.argv))
             experimentalSyntax,
             noThrow,
             log,
-            patch: resolvePath(patch)
+            patch: patch ? resolvePath(patch) : undefined
         }
             watcher({buildOptions})
         })
@@ -78,7 +78,7 @@ yargs(hideBin(process.argv))
             console.log(`sourcePath: ${resolvePath(sourcePath)}`)
             console.log(`experimentalBoolean: ${experimentalBoolean}`)
             console.log(`experimentalSyntax: ${experimentalSyntax}`)
-            console.log(`patch: ${resolvePath(patch)}`)
+            console.log(`patch: ${patch ? resolvePath(patch) : undefined}`)
         })
     .command('version', `Reports what version of LP Builder you are using.`, (argv) => console.log(`version ${PACKAGE.version}`))
     .demandCommand()
