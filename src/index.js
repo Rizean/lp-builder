@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const PACKAGE = require('../package.json')
 const yargs = require('yargs/yargs')
 const {hideBin} = require('yargs/helpers')
