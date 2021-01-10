@@ -1,0 +1,29 @@
+WHAT: none
+WHERE: none
+WHEN: 0 - 24
+WHO: none
+OTHER: none
+
+    secTenantID = RE_second_Tenant.getGlobal()
+    thirdTenantID = RE_third_Tenant.getGlobal()
+    TenantA = getSpecific(secTenantID)
+    TenantB = getSpecific(thirdTenantID)
+
+    goOn = false
+    If TenantA.isValid() && Actor.isSameAs(TenantA)
+        goOn = true
+    ElseIf TenantB.isValid() && Actor.isSameAs(TenantB)
+        goOn = true
+    EndIf
+
+    If goOn
+        Actor.setActorVar(RE_home_clothing, 1)
+        // Show up in underwear
+        incActor = Actor
+        #include lp_bug_if_wrong_count //dressUnderwear
+        Actor.setNoRedress(true)
+    EndIf
+
+    // TODO: Add scene UI
+
+    //eof

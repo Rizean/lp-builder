@@ -1,0 +1,9 @@
+If TenantA.isValid() && Actor.isSameAs(TenantA)
+    "test if 1"
+ElseIf TenantB.isValid() && Actor.isSameAs(TenantB)
+    "test ElseIf 1"
+EndIf
+
+If goOn
+    "test if 2"
+EndIf

@@ -16,16 +16,18 @@ module.exports = {
     processIncludes: ({source, path, name, extension, size, type, noThrow = true}) => {
         if (extension !== '.lpscene') return source
         const regex = /(?<indent>.*)#include\s*(?<include>\w+)/
-        return source.map(line => {
+        const newSource = []
+        source.forEach(line => {
             if (regex.test(line)) {
                 const {groups: {include, indent}} = regex.exec(line)
                 if (!includeMap.has(include)) {
                     handleError({noThrow, ln: '-', path, error: UNKNOWN_INCLUDE, msg: `Ignoring include file ith same name.`})
-                    return line
+                    return newSource.push(line)
                 }
-                return includeMap.get(include).map(line => `${indent}${line}`).join('\r\n')
+                includeMap.get(include).forEach(line => newSource.push(`${indent}${line}`))
             }
-            return line
+            return newSource.push(line)
         })
+        return newSource
     }
 }
