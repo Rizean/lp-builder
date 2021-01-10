@@ -1,1 +1,8 @@
 /dist/
+/results/
+/tests/
+/scripts/
+build.json
+build.log
+.editorconfig
+yarn.lock
