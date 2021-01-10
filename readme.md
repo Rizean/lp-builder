@@ -1,7 +1,7 @@
 # LP Builder
 ## Install
-* `npm install -g lp-builder`
-* `yarn global add lp-builder`
+* `npm install -g lp-builder@latest`
+* `yarn global add lp-builder@latest`
 
 ## Build
 ### Setup for building LP Builder
