@@ -1,6 +1,6 @@
 {
   "name": "lp-builder",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "main": "src/index.js",
   "repository": {
     "type": "git",
