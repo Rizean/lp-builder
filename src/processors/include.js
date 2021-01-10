@@ -24,7 +24,7 @@ module.exports = {
                     handleError({noThrow, ln: '-', path, error: UNKNOWN_INCLUDE, msg: `Ignoring include file ith same name.`})
                     return newSource.push(line)
                 }
-                includeMap.get(include).forEach(line => newSource.push(`${indent}${line}`))
+                return includeMap.get(include).forEach(line => newSource.push(`${indent}${line}`))
             }
             return newSource.push(line)
         })
