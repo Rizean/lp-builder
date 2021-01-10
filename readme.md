@@ -1,7 +1,7 @@
 # LP Builder
 ## Install
-* `npm install -g lpbuilder`
-* `yarn global add lpbuilder`
+* `npm install -g lp-builder`
+* `yarn global add lp-builder`
 
 ## Build
 ### Setup for building LP Builder
@@ -15,11 +15,11 @@
 
 ## Use
 ### Core
-1. Build: `lpBuilder build <sourcePath> <buildPath>`
-2. Watch: `lpBuilder watch <sourcePath> <buildPath>`
-3. Check Paths: `lpBuilder check <sourcePath> <buildPath>`
+1. Build: `lpbuilder build <sourcePath> <buildPath>`
+2. Watch: `lpbuilder watch <sourcePath> <buildPath>`
+3. Check Paths: `lpbuilder check <sourcePath> <buildPath>`
 
-Common use case: `lpBuilder watch D:\projects\my_lifeplay_project\src\Modules\my_module D:\other\LifePlay\LifePlay\Content\Modules\my_module --ufe`
+Common use case: `lpbuilder watch D:\projects\my_lifeplay_project\src\Modules\my_module D:\other\LifePlay\LifePlay\Content\Modules\my_module --ufe`
 
 ### Options
 #### Flags
