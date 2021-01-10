@@ -6,3 +6,5 @@ build.json
 build.log
 .editorconfig
 yarn.lock
+.idea
+.dockerignore
