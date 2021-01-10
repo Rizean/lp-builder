@@ -10,8 +10,8 @@ const resolvePath = (pathString) => path.resolve(process.cwd(), pathString)
 
 const getBuildOptions = (yargs) => {
     yargs
-        .positional('buildPath', {describe: 'build path', type: 'string'})
         .positional('sourcePath', {describe: 'source path', type: 'string'})
+        .positional('buildPath', {describe: 'build path', type: 'string'})
         .option('experimentalBoolean', {
             alias: 'xb',
             describe: 'experimental boolean operand repair',
@@ -41,7 +41,7 @@ const getBuildOptions = (yargs) => {
 
 yargs(hideBin(process.argv))
     .command(
-        'build <buildPath> <sourcePath>', 'Builds all files in source path and outputs them to the build path.',
+        'build <sourcePath> <buildPath>', 'Builds all files in source path and outputs them to the build path.',
         getBuildOptions,
         ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
             const buildOptions = {
@@ -55,7 +55,7 @@ yargs(hideBin(process.argv))
             }
             build(buildOptions).catch(console.error)
         })
-    .command('watch <buildPath> <sourcePath>', 'Syntax is the same as build, but will automatically watch for changes to your input file and rebuild them dynamically.',
+    .command('watch <sourcePath> <buildPath>', 'Syntax is the same as build, but will automatically watch for changes to your input file and rebuild them dynamically.',
         getBuildOptions,
         ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
         const buildOptions = {
@@ -69,7 +69,7 @@ yargs(hideBin(process.argv))
         }
             watcher({buildOptions})
         })
-    .command('check <buildPath> <sourcePath>', 'Syntax is the same as build, but will only output the paths.',
+    .command('check <sourcePath> <buildPath>', 'Syntax is the same as build, but will only output the paths.',
         getBuildOptions,
         ({sourcePath, buildPath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
             console.log(`buildPath: ${resolvePath(buildPath)}`)
