@@ -1,6 +1,6 @@
 {
   "name": "lp-builder",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "main": "src/index.js",
   "repository": {
     "type": "git",
@@ -19,7 +19,7 @@
     "yargs": "^16.1.0"
   },
   "bin": {
-    "lpbuilder": "node ./src/index.js"
+    "lpbuilder": "./src/index.js"
   },
   "devDependencies": {
     "pkg": "^4.4.9"
