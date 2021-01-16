@@ -1,0 +1,2 @@
+willpower = [energy / 100 * intelligence] - [intoxication / 4]
+testLogic = If A = B

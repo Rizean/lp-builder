@@ -1,0 +1,33 @@
+{
+  "@comments": [
+    "https://www.andiamo.co.uk/resources/iso-language-codes/",
+    "https://www.babbel.com/en/magazine/how-to-say-hello-in-10-different-languages",
+    "https://translate.google.com/"
+  ],
+  "formalHello": {
+    "en-us": "Hello",
+    "fr": "Bonjour",
+    "es": "Hola",
+    "ru": "Здравствуйте",
+    "zh-cn": "你好",
+    "it": "Salve",
+    "ja": "こんにちは",
+    "de": "Guten Tag",
+    "pt": "Olá",
+    "ko": "안영 해요",
+    "ar-sa": "السلام عليكم"
+  },
+  "informalHello": {
+    "en-us": "What’s up?",
+    "fr": "Quoi de neuf?",
+    "es": "¿Qué tal?",
+    "ru": "Что происходит?",
+    "zh-cn": "这是怎么回事？",
+    "it": "Che cosa succede?",
+    "ja": "調子はどう？",
+    "de": "Wie geht's?",
+    "pt": "E aí?",
+    "ko": "뭐야?",
+    "ar-sa": "ماذا تفعل؟"
+  }
+}
