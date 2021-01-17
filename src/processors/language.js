@@ -31,7 +31,6 @@ const generateTranslations = ({source, path, name, extension, size, type, noThro
     languages.forEach(lang=>translated[lang] = [])
 
     const writeLine = (line, key) => {
-        if (key) console.log('writeLine', line, key)
         let translatedLine = line
         if (key && !languageStrings.has(key)) {
             handleError({noThrow, ln: '-', path, level: 'warn', error: LANGUAGE_REPEAT_STRING, msg: `Language repeat string with key ${key}.`})
@@ -49,13 +48,11 @@ const generateTranslations = ({source, path, name, extension, size, type, noThro
                     if (defaultLang) translation = languageStrings.get(key)[defaultLang]
                 }
             }
-            if (translation) translatedLine = translatedLine.replace(key, translation)
+            if (translation) translatedLine = line.replace(`@{${key}}`, translation)
             try {
                 translated[lang].push(translatedLine)
             } catch (e) {
                 console.error(`name: ${name}  lang: ${lang}  translated: ${translatedLine} key: ${key}`, e)
-
-                // console.error('languages', languages)
                 throw e
             }
 
