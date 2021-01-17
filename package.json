@@ -1,6 +1,6 @@
 {
   "name": "lp-builder",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "main": "src/index.js",
   "repository": {
     "type": "git",
@@ -36,6 +36,7 @@
     "build:mac": "./node_modules/.bin/pkg src/index.js --output dist/0.5.8/lpBuilder-mac-x64 --targets node14-mac-x64",
     "test:manual": "node src build ./tests/Modules ./results",
     "test:manual:x": "node src build ./tests/Modules ./results --xb --xs --ufe -l",
+    "test:full": "node src build ./tests/Modules ./results --xb --xs --ufe -l -t",
     "test:core": "node src build D:\\other\\LifePlay\\LifePlay\\Content\\Modules ./results -l",
     "test:core:x": "node src build D:\\\\other\\\\LifePlay\\\\LifePlay\\\\Content\\\\Modules ./results --xb --xs --ufe -l -p data/patches20200109.js",
     "test:core:check": "node src check D:\\other\\LifePlay\\LifePlay\\Content\\Modules ./results -l",

@@ -1,10 +1,13 @@
 {
+  "@type": "language",
+  "@version": "1",
   "@comments": [
     "https://www.andiamo.co.uk/resources/iso-language-codes/",
     "https://www.babbel.com/en/magazine/how-to-say-hello-in-10-different-languages",
     "https://translate.google.com/"
   ],
   "formalHello": {
+    "default": "en-us",
     "en-us": "Hello",
     "fr": "Bonjour",
     "es": "Hola",
@@ -18,6 +21,7 @@
     "ar-sa": "السلام عليكم"
   },
   "informalHello": {
+    "default": "en-us",
     "en-us": "What’s up?",
     "fr": "Quoi de neuf?",
     "es": "¿Qué tal?",

@@ -64,7 +64,7 @@ const processOperands = (source, path, extension, noThrow) => {
 
 const validateSyntax = ({source, path, name, extension, size, type, noThrow = true}) => {
     // if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt'  || extension === '.md') return source
-    if (!extension.includes('.lp') || extension === '.txt' || extension === '.md') return source
+    if (!extension.includes('.lp') || extension === '.txt' || extension === '.md' || extension === '.lplang') return source
     logger.info(`Validating Syntax: `, path)
     let hasSceneStart = false
     let hasSceneEnd = false
@@ -127,7 +127,8 @@ const choices = ({source, path, name, extension, size, type, noThrow = true}) =>
 
 const replaceTabs = ({source, path, name, extension, size, type, noThrow = true, options = {}}) => {
     const {indent = '    '} = options
-    return source.map(line => line.replace(/\t/g, indent))
+    if (Array.isArray(source)) return source.map(line => line.replace(/\t/g, indent))
+    return source.replace(/\t/g, indent)
 }
 
 const checkIfElseEndif = ({source, path, name, extension, size, type, noThrow = true}) => {

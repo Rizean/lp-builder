@@ -11,7 +11,7 @@ const BOOLEAN_OPERANDS = [
 
 // checks for &+\s*&+ or |+\s*|+
 const booleanOperands = ({source, path, name, extension, size, type, noThrow = true}) => {
-    if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt' || extension === '.md') return source
+    if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt' || extension === '.md' || extension === '.lplang') return source
     return source.map((line, i) => {
         const ln = i + 1
         // const dialog = getDialog(line)
@@ -31,7 +31,7 @@ const booleanOperands = ({source, path, name, extension, size, type, noThrow = t
 }
 
 const syntax = ({source, path, name, extension, size, type, noThrow = true}) => {
-    if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt' || extension === '.md') return source
+    if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt' || extension === '.md' || extension === '.lplang') return source
     return source.map((line, i) => {
         const ln = i + 1
         const code = getNonDialog(line)

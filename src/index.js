@@ -39,13 +39,18 @@ const getBuildOptions = (yargs) => {
             describe: 'path to patch file',
             type: 'string'
         })
+        .option('translations', {
+            alias: 't',
+            describe: 'write translations',
+            type: 'boolean'
+        })
 }
 
 yargs(hideBin(process.argv))
     .command(
         'build <sourcePath> <buildPath>', 'Builds all files in source path and outputs them to the build path.',
         getBuildOptions,
-        ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
+        ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch, translations}) => {
             const buildOptions = {
                 buildPath: resolvePath(buildPath),
                 sourcePath: resolvePath(sourcePath),
@@ -53,13 +58,14 @@ yargs(hideBin(process.argv))
                 experimentalSyntax,
                 noThrow,
                 log,
-                patch: patch ? resolvePath(patch) : undefined
+                patch: patch ? resolvePath(patch) : undefined,
+                translations
             }
-            build(buildOptions).catch(console.error)
+           build(buildOptions).catch(console.error)
         })
     .command('watch <sourcePath> <buildPath>', 'Syntax is the same as build, but will automatically watch for changes to your input file and rebuild them dynamically.',
         getBuildOptions,
-        ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch}) => {
+        ({buildPath, sourcePath, experimentalBoolean, experimentalSyntax, unFatalErrors: noThrow, log, patch, translations}) => {
         const buildOptions = {
             buildPath: resolvePath(buildPath),
             sourcePath: resolvePath(sourcePath),
@@ -67,7 +73,8 @@ yargs(hideBin(process.argv))
             experimentalSyntax,
             noThrow,
             log,
-            patch: patch ? resolvePath(patch) : undefined
+            patch: patch ? resolvePath(patch) : undefined,
+            translations
         }
             watcher({buildOptions})
         })
