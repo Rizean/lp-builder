@@ -1,11 +1,13 @@
 const logger = require('../Logger')()
+const checks = require('../tools/checks')
 const {getIndent, getDialog, getNonDialog, countChar, countExpression, isTriggerConditions} = require('./tools')
-const {booleanOperands} = require('./advanceChecks')
+// const {booleanOperands} = require('./advanceChecks')
 const handleError = require('../handleError')
 const {
-    INVALID_PAIR, INVALID_DIALOGUE, INVALID_OPERAND, MISSING_SCENE_START, MULTIPLE_SCENE_START, MISSING_SCENE_END, MULTIPLE_SCENE_END, NESTED_RANDOM,
-    INVALID_RANDOM_INDENT, MISSING_RANDOM_END, MISSING_CHOICE_LINE_BREAK, INVALID_IF_ELSE_ENDIF
+    INVALID_PAIR, INVALID_DIALOGUE, INVALID_OPERAND, MISSING_SCENE_END,
+    INVALID_INDENT, MISSING_CHOICE_LINE_BREAK, INVALID_IF_ELSE_ENDIF, BLOCK_SCOPE_ERROR, UNKNOWN_SYNTAX
 } = require('../errors')
+
 
 // const VALID_OPERANDS = [
 //     {syntax: '+=', stat: false},
@@ -47,7 +49,6 @@ const processOperands = (source, path, extension, noThrow) => {
     if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt' || extension === '.md') return source
     return source.map((line, i) => {
         const ln = i + 1
-        // const dialog = getDialog(line)
         const code = getNonDialog(line)
 
         let modified = code
@@ -62,43 +63,114 @@ const processOperands = (source, path, extension, noThrow) => {
     })
 }
 
-const validateSyntax = ({source, path, name, extension, size, type, noThrow = true}) => {
-    // if (!extension.includes('.lp') || extension === '.lpcharacter' || extension === '.lpmod' || extension === '.lpquest' || extension === '.txt'  || extension === '.md') return source
+const validateSyntax = ({source, path, name, extension, size, type, noThrow = true, warnOnIndentError = false}) => {
+    if (['.lptalk', '.lpdesc', '.lpworld', '.lpaddon', '.lpcharacter', '.lpmod', '.lpstat', '.lpaction', '.lpquest'].includes(extension)) return source
     if (!extension.includes('.lp') || extension === '.txt' || extension === '.md' || extension === '.lplang') return source
     logger.info(`Validating Syntax: `, path)
+    const isAI = extension === '.lpai'
     let hasSceneStart = false
     let hasSceneEnd = false
-    let inRandomBlock = false
-    let randomIndent = 0
+    let sourceIndent = undefined
+    let expectedIndent = 0
+
+    let context = {
+        isValid: true,
+        type: 'root',
+        scopes: [],
+        depth: 0,
+        indent: -1,
+        currentScope: undefined
+    }
+    context.currentScope = context
 
     source.forEach((line, i) => {
         const ln = i + 1
+        if (isAI && ln <= 5) return
         const indent = getIndent(line)
-        //if (inRandomBlock && indent < (randomIndent + 2)) logger.warn(`${sourcePath} has invalid Random indent on line: ${ln}`)
+        const isEmptyLine = line.trim() === ''
+        if (isEmptyLine) return
+
+        if (checks.expressionType(line) === 'unknown') {
+            handleError({noThrow, ln, path, level: 'warn', error: UNKNOWN_SYNTAX, msg: `${line.trim()}`})
+        }
+
+        if (context.indent === -1 && indent > 0) context.indent = indent
+
+        if (!sourceIndent && indent > 0) {
+            sourceIndent = indent
+            expectedIndent = indent
+        }
+        if (warnOnIndentError && indent !== expectedIndent) {
+            const firstPhrase = line.trim().split(' ')[0].toLowerCase()
+            if (!['random', 'endrandom', 'while', 'endwhile', 'if', 'elseif', 'else', 'endif'].includes(firstPhrase)) {
+                handleError({noThrow, ln, path, level: 'warn', error: INVALID_INDENT, msg: `Invalid indent. Expected: ${expectedIndent}  Found: ${indent}  SourceIndent: ${sourceIndent}`})
+            }
+        }
+
+        const handleNewScope = ({context, type, ln}) => {
+            if (context.currentScope.type === 'random' && type !== 'random') {
+                context.isValid = false
+                return handleError({noThrow, ln, path, error: BLOCK_SCOPE_ERROR, msg: `Cannot nest "if" inside random scope!`})
+            }
+            const newScope = {type: type, start: ln, stop: -1, indent: indent + context.indent, scopes: [], parent: context.currentScope, depth: context.currentScope.depth + 1}
+            context.currentScope.scopes.push(newScope)
+            context.currentScope = newScope
+        }
+        const handleCloseScope = ({type, ln, context}) => {
+            context.isValid = false
+            const _handleError = (expected) => handleError({noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Expected ${expected} but found ${type} for If starting on line: ${context.currentScope.start}`})
+            if (context.currentScope.type === 'if' && type !== 'endif') _handleError('EndIf')
+            else if (context.currentScope.type === 'while' && type !== 'endwhile') _handleError('EndWhile')
+            else if (context.currentScope.type === 'random' && type !== 'endrandom') _handleError('EndRandom')
+            else if (context.currentScope.type === 'root') handleError({noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Unexpected ${type}`})
+            else {
+                context.isValid = false
+                context.currentScope.stop = ln
+                context.currentScope = context.currentScope.parent
+            }
+        }
 
         if (line.trim().toLowerCase() === 'scenestart()') {
-            // if (hasSceneStart) handleError({noThrow, ln, path, error: MULTIPLE_SCENE_START, msg: `Multiple SceneStart()`})
             hasSceneStart = true
         } else if (line.trim().toLowerCase() === 'sceneend()') {
-            // if (hasSceneEnd) handleError({noThrow, ln, path, error: MULTIPLE_SCENE_END, msg: `Multiple SceneEnd()`})
             hasSceneEnd = true
         } else if (line.trim().toLowerCase() === 'random') {
-            if (inRandomBlock) handleError({noThrow, ln, path, error: NESTED_RANDOM, msg: `Nested Random`})
-            inRandomBlock = true
-            randomIndent = getIndent(line)
+            handleNewScope({context, type: 'random', ln})
         } else if (line.trim().toLowerCase() === 'endrandom') {
-            inRandomBlock = false
-        } else if (inRandomBlock && indent < (randomIndent + 2)) {
-            handleError({noThrow, level: 'info', ln, path, error: INVALID_RANDOM_INDENT, msg: `Invalid Random indent`})
+            handleCloseScope({type: 'endrandom', ln, context})
+        } else if (line.trim().toLowerCase().startsWith('while')) {
+            handleNewScope({context, type: 'while', ln})
+        } else if (line.trim().toLowerCase() === 'endwhile') {
+            handleCloseScope({type: 'endwhile', ln, context})
+        } else if (context.isValid && line.trim().toLowerCase().startsWith('if')) {
+            handleNewScope({context, type: 'if', ln})
+        } else if (context.isValid && line.trim().toLowerCase().startsWith('endif')) {
+            handleCloseScope({type: 'endif', ln, context})
+        } else if (context.isValid && line.trim().toLowerCase().startsWith('elseif')) {
+            if (context.currentScope.type !== 'if') {
+                context.isValid = false
+                handleError({noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Unexpected ElseIf!`})
+            }
+        } else if (context.isValid && line.trim().toLowerCase().startsWith('else')) {
+            if (context.currentScope.type !== 'if') {
+                context.isValid = false
+                handleError({noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Unexpected ElseIf!`})
+            }
         }
+
         if (line.includes('"')) checkDialogue({line, path, ln, noThrow})
         checkSyntaxPair({noThrow, line, path, ln, left: "[", right: "]"})
         checkSyntaxPair({noThrow, line, path, ln, left: "(", right: ")"})
     })
 
-    //if (extension === '.lpscene' && !hasSceneStart) handleError({noThrow, path, error: MISSING_SCENE_START, msg: `Missing SceneStart()`})
     if (extension === '.lpscene' && hasSceneStart && !hasSceneEnd) handleError({noThrow, path, error: MISSING_SCENE_END, msg: `Missing SceneEnd()`})
-    if (inRandomBlock) handleError({noThrow, path, error: MISSING_RANDOM_END, msg: `Missing EndRandom`})
+    if (context.isValid && context.currentScope !== context) handleError({
+        noThrow,
+        processor: 'validateSyntax',
+        path,
+        error: BLOCK_SCOPE_ERROR,
+        msg: `EOF and unclosed ${context.currentScope.type} starting on line ${context.currentScope.start} detected!`
+    })
     return source
 }
 
@@ -195,6 +267,7 @@ const checkIfElseEndifV2 = ({source, path, name, extension, size, type, noThrow 
     let expectedIndent = 4
     source.forEach((line, i) => {
         const ln = i + 1
+        if (ln < 6) return
         const indent = getIndent(line)
         const code = getNonDialog(line)
 
@@ -210,14 +283,13 @@ const checkIfElseEndifV2 = ({source, path, name, extension, size, type, noThrow 
                 handleError({noThrow, processor: 'checkIfElseEndifV2', ln, level: 'error', path, error: INVALID_IF_ELSE_ENDIF, msg: `If/EndIf indent miss match!`})
             }
             expectedIndent = indent
-        }
-        else if (line.trim() !== '' && indent !== expectedIndent && ifBlocks.length > 0) {
+        } else if (line.trim() !== '' && indent !== expectedIndent && ifBlocks.length > 0) {
             if (regexElseIf.test(code)) return
             if (regexElse.test(code)) return
             handleError({noThrow, processor: 'checkIfElseEndifV2', ln, level: 'warn', path, error: INVALID_IF_ELSE_ENDIF, msg: `Expected ${expectedIndent} indent but found ${indent}. code: ${code}`})
         }
     })
-    ifBlocks.forEach(({indent, type, ln})=>{
+    ifBlocks.forEach(({indent, type, ln}) => {
         handleError({noThrow, processor: 'checkIfElseEndifV2', ln, level: 'error', path, error: INVALID_IF_ELSE_ENDIF, msg: `Unclosed ${type} on line: ${ln}!`})
     })
 
