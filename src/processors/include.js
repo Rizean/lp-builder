@@ -9,7 +9,7 @@ const _processIncludes = ({source, path, name, extension, size, type, noThrow}) 
 
     source.forEach((line, i) => {
         const ln = i + 1
-        if (regex.test(line)) {
+        if (regex.test(line) && line.trim().startsWith('#')) {
             const {groups: {include, indent}} = regex.exec(line)
             if (!includeMap.has(include)) {
                 handleError({noThrow, ln, path, error: UNKNOWN_INCLUDE, msg: `Include not found for ${include}`})

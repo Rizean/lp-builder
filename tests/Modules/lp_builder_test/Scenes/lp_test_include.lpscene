@@ -6,6 +6,7 @@ OTHER: none
 
     SceneStart()
     #include lp_include_with_nested_include
+    // #include whatever should not be included
 
     If A | B || C & E
         "missing an |"
