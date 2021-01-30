@@ -143,10 +143,10 @@ const checkIfElseEndif = ({source, path, name, extension, size, type, noThrow = 
             else: countExpression(code, /(?:\b|^)else\s*$/ig),
             endIf: countExpression(code, /(?:\b|^)endIf\s*$/ig),
         }
-        counts.if      += temp.if
-        counts.elseIf  += temp.elseIf
-        counts.else    += temp.else
-        counts.endIf   += temp.endIf
+        counts.if += temp.if
+        counts.elseIf += temp.elseIf
+        counts.else += temp.else
+        counts.endIf += temp.endIf
         return counts
     }
     // init our counts to zero by calling checkIfElseEndIf() without params feeding that into the initial reduce value
@@ -179,7 +179,50 @@ const checkIfElseEndif = ({source, path, name, extension, size, type, noThrow = 
     }
     return source
 }
+const checkIfElseEndifV2 = ({source, path, name, extension, size, type, noThrow = true}) => {
+    const skipExtensions = ['.lpcharacter', '.lpaddon', '.lpmod', '.lpquest', '.txt', '.md', '.lpstat']
+    if (!extension.includes('.lpscene')) return source
 
+    const ifBlocks = []
+
+    const regexIf = /(?:\b|^)if\b/i
+    const regexElseIf = /(?:\b|^)elseif\b/i
+    const regexElse = /(?:\b|^)else\s*$/i
+    const regexEndIf = /(?:\b|^)endIf\s*$/i
+
+
+    let depth = 0
+    let expectedIndent = 4
+    source.forEach((line, i) => {
+        const ln = i + 1
+        const indent = getIndent(line)
+        const code = getNonDialog(line)
+
+        if (regexIf.test(code)) {
+            ifBlocks.push({indent, type: 'if', ln})
+            expectedIndent = indent + 4
+            depth++
+        } else if (regexEndIf.test(code)) {
+            const data = ifBlocks.pop()
+            if (!data) {
+                handleError({noThrow, processor: 'checkIfElseEndifV2', ln, level: 'error', path, error: INVALID_IF_ELSE_ENDIF, msg: `Unexpected EndIf!`})
+            } else if (data.indent !== indent) {
+                handleError({noThrow, processor: 'checkIfElseEndifV2', ln, level: 'error', path, error: INVALID_IF_ELSE_ENDIF, msg: `If/EndIf indent miss match!`})
+            }
+            expectedIndent = indent
+        }
+        else if (line.trim() !== '' && indent !== expectedIndent && ifBlocks.length > 0) {
+            if (regexElseIf.test(code)) return
+            if (regexElse.test(code)) return
+            handleError({noThrow, processor: 'checkIfElseEndifV2', ln, level: 'warn', path, error: INVALID_IF_ELSE_ENDIF, msg: `Expected ${expectedIndent} indent but found ${indent}. code: ${code}`})
+        }
+    })
+    ifBlocks.forEach(({indent, type, ln})=>{
+        handleError({noThrow, processor: 'checkIfElseEndifV2', ln, level: 'error', path, error: INVALID_IF_ELSE_ENDIF, msg: `Unclosed ${type} on line: ${ln}!`})
+    })
+
+    return source
+}
 
 module.exports = {
     replaceTabs,
@@ -187,4 +230,5 @@ module.exports = {
     validateSyntax,
     processOperands,
     checkIfElseEndif,
+    checkIfElseEndifV2
 }
