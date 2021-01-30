@@ -8,7 +8,7 @@ const buildPhaseFour = async ({tree, experimentalBoolean, experimentalSyntax, no
         tree.children = await Promise.all(tree.children.map(async child => {
             if (child.type === 'file') {
                 child.source = validateSyntax({...child, noThrow})
-                child.source = checkIfElseEndif({...child, noThrow})
+                // child.source = checkIfElseEndif({...child, noThrow})
                 child.translations = generateTranslations({...child, noThrow})
                 return child
             } else if (child.type === 'directory') {

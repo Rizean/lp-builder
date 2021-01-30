@@ -13,7 +13,7 @@ const buildPhaseTwo = async ({tree, experimentalBoolean, experimentalSyntax, noT
                 child.source = processIncludes({...child, noThrow})
                 if (!experimentalBoolean) child.source = processOperands(child.source, child.path, child.extension, noThrow)
                 if (experimentalBoolean) child.source = booleanOperands({...child, noThrow})
-                checkIfElseEndifV2({...child, noThrow})
+                // checkIfElseEndifV2({...child, noThrow})
                 if (experimentalSyntax) child.source = syntax({...child, noThrow})
 
                 return child
