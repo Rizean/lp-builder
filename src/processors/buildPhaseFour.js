@@ -1,13 +1,16 @@
 const {validateSyntax, checkIfElseEndif} = require('./processors')
+const processErrors = require('./processErrors')
 const {generateTranslations} = require('./language')
 const logger = require('../Logger')()
 
-const buildPhaseFour = async ({tree, experimentalBoolean, experimentalSyntax, noThrow}) => {
+const buildPhaseFour = async ({tree, experimentalBoolean, experimentalSyntax, noThrow, warnOnIndentError}) => {
     logger.info('BUILD: Phase Four')
     try {
         tree.children = await Promise.all(tree.children.map(async child => {
             if (child.type === 'file') {
-                child.source = validateSyntax({...child, noThrow})
+                // child.source = validateSyntax({...child, noThrow})
+                validateSyntax(child, {noThrow, warnOnIndentError})
+                processErrors(child, {noThrow, warnOnIndentError})
                 // child.source = checkIfElseEndif({...child, noThrow})
                 child.translations = generateTranslations({...child, noThrow})
                 return child

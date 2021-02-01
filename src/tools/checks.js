@@ -1,3 +1,5 @@
+const {getIndent, getDialog, getNonDialog, countChar, checkModified} = require('../processors/tools')
+
 /*
 A line can only be one of the following
 1. Trigger - WHAT, WHERE, WHEN, WHO, OTHER
@@ -27,13 +29,15 @@ const checks = {
     isStringAssignment: (str) => /^(\w[\w\d]*)\s*=\s*"(.*)"$/.test(str.trim()),
     // todo isValueAssignment matches things it should not
     isValueAssignment: (str) => /^(\w[\w\d]*)\s*([=+\-*/>]{1,2})/.test(str.trim()),
+    isObjectPropertyAssignment: (str) => /^(\w[\w\d]*)\.(\w[\w\d]*)\s*([=+\-*/>]{1,2})/.test(str.trim()),
     isEmpty: (str) => str.trim() === '',
     isFunction: (str) => LPC.L_FUNCTIONS.includes(str.trim().split(' ')[0].split('(')[0].toLowerCase()),
     // todo this likely matches object.function with invalid params
-    isObjectFunction: (str) => /^\w[\w\d]*\.\w[\w\d]*\([\w\d_,.\s-/]*\)/.test(str.trim()),
+    isObjectFunction: (str) => /^\w[\w\d]*\.\w[\w\d]*\([\w\d_,.\s-/()]*\)/.test(str.trim()),
     isObjectProperty: (str) => /^\w[\w\d]*:\w[\w\d]*/.test(str.trim()),
     isInclude: (str) => str.trim().startsWith('#'),
     expressionType: (str) => {
+        str = str.split('//')[0].trim()
         if (checks.isIfExpression(str)) return 'if'
         if (checks.isWhile(str)) return 'while'
         if (checks.isRandom(str)) return 'random'
@@ -45,6 +49,7 @@ const checks = {
         if (checks.isComment(str)) return 'comment'
         if (checks.isStringAssignment(str)) return 'stringAssignment'
         if (checks.isValueAssignment(str)) return 'valueAssignment'
+        if (checks.isObjectPropertyAssignment(str)) return 'objectPropertyAssignment'
         if (checks.isEmpty(str)) return 'empty'
         if (checks.isFunction(str)) return 'function'
         if (checks.isObjectFunction(str)) return 'object.function'

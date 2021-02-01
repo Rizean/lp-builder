@@ -9,12 +9,14 @@ const buildPhaseTwo = async ({tree, experimentalBoolean, experimentalSyntax, noT
     try {
         tree.children = await Promise.all(tree.children.map(async child => {
             if (child.type === 'file') {
-                child.source = processPatches({...child, noThrow, patchCommands})
+                // child.source = processPatches({...child, noThrow, patchCommands})
+                processPatches(child, {noThrow, patchCommands})
                 child.source = processIncludes({...child, noThrow})
                 if (!experimentalBoolean) child.source = processOperands(child.source, child.path, child.extension, noThrow)
                 if (experimentalBoolean) child.source = booleanOperands({...child, noThrow})
                 // checkIfElseEndifV2({...child, noThrow})
-                if (experimentalSyntax) child.source = syntax({...child, noThrow})
+                // if (experimentalSyntax) child.source = syntax({...child, noThrow})
+                if (experimentalSyntax) syntax(child, {noThrow})
 
                 return child
             } else if (child.type === 'directory') {

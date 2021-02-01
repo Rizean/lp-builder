@@ -63,7 +63,10 @@ const processOperands = (source, path, extension, noThrow) => {
     })
 }
 
-const validateSyntax = ({source, path, name, extension, size, type, noThrow = true, warnOnIndentError = false}) => {
+// const validateSyntax = ({source, path, name, extension, size, type, noThrow = true, warnOnIndentError = false}) => {
+const validateSyntax = (child, options) => {
+    const {source, path, name, extension, size, type} = child
+    const {noThrow = true, warnOnIndentError = false} = options
     if (['.lptalk', '.lpdesc', '.lpworld', '.lpaddon', '.lpcharacter', '.lpmod', '.lpstat', '.lpaction', '.lpquest'].includes(extension)) return source
     if (!extension.includes('.lp') || extension === '.txt' || extension === '.md' || extension === '.lplang') return source
     logger.info(`Validating Syntax: `, path)
@@ -91,7 +94,7 @@ const validateSyntax = ({source, path, name, extension, size, type, noThrow = tr
         if (isEmptyLine) return
 
         if (checks.expressionType(line) === 'unknown') {
-            handleError({noThrow, ln, path, level: 'warn', error: UNKNOWN_SYNTAX, msg: `${line.trim()}`})
+            handleError({child, noThrow, ln, path, level: 'warn', error: UNKNOWN_SYNTAX, msg: `${line.trim()}`})
         }
 
         if (context.indent === -1 && indent > 0) context.indent = indent
@@ -103,58 +106,60 @@ const validateSyntax = ({source, path, name, extension, size, type, noThrow = tr
         if (warnOnIndentError && indent !== expectedIndent) {
             const firstPhrase = line.trim().split(' ')[0].toLowerCase()
             if (!['random', 'endrandom', 'while', 'endwhile', 'if', 'elseif', 'else', 'endif'].includes(firstPhrase)) {
-                handleError({noThrow, ln, path, level: 'warn', error: INVALID_INDENT, msg: `Invalid indent. Expected: ${expectedIndent}  Found: ${indent}  SourceIndent: ${sourceIndent}`})
+                handleError({child, noThrow, ln, path, level: 'warn', error: INVALID_INDENT, msg: `Invalid indent. Expected: ${expectedIndent}  Found: ${indent}  SourceIndent: ${sourceIndent}`})
             }
         }
 
         const handleNewScope = ({context, type, ln}) => {
+            if (!context.isValid) return
             if (context.currentScope.type === 'random' && type !== 'random') {
                 context.isValid = false
-                return handleError({noThrow, ln, path, error: BLOCK_SCOPE_ERROR, msg: `Cannot nest "if" inside random scope!`})
+                return handleError({child, noThrow, ln, path, error: BLOCK_SCOPE_ERROR, msg: `Cannot nest "if" inside random scope!`})
             }
             const newScope = {type: type, start: ln, stop: -1, indent: indent + context.indent, scopes: [], parent: context.currentScope, depth: context.currentScope.depth + 1}
             context.currentScope.scopes.push(newScope)
             context.currentScope = newScope
         }
         const handleCloseScope = ({type, ln, context}) => {
+            if (!context.isValid) return
             context.isValid = false
-            const _handleError = (expected) => handleError({noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Expected ${expected} but found ${type} for If starting on line: ${context.currentScope.start}`})
+            const _handleError = (expected) => handleError({child, noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Expected ${expected} but found ${type} for If starting on line: ${context.currentScope.start}`})
             if (context.currentScope.type === 'if' && type !== 'endif') _handleError('EndIf')
             else if (context.currentScope.type === 'while' && type !== 'endwhile') _handleError('EndWhile')
             else if (context.currentScope.type === 'random' && type !== 'endrandom') _handleError('EndRandom')
             else if (context.currentScope.type === 'root') handleError({noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Unexpected ${type}`})
             else {
-                context.isValid = false
+                context.isValid = true
                 context.currentScope.stop = ln
                 context.currentScope = context.currentScope.parent
             }
         }
-
-        if (line.trim().toLowerCase() === 'scenestart()') {
+        const src = getNonDialog(line).trim().toLowerCase()
+        if (src === 'scenestart()') {
             hasSceneStart = true
-        } else if (line.trim().toLowerCase() === 'sceneend()') {
+        } else if (src.startsWith('sceneend()')) {
             hasSceneEnd = true
-        } else if (line.trim().toLowerCase() === 'random') {
+        } else if (src.startsWith('random')) {
             handleNewScope({context, type: 'random', ln})
-        } else if (line.trim().toLowerCase() === 'endrandom') {
+        } else if (src.startsWith('endrandom')) {
             handleCloseScope({type: 'endrandom', ln, context})
-        } else if (line.trim().toLowerCase().startsWith('while')) {
+        } else if (src.startsWith('while')) {
             handleNewScope({context, type: 'while', ln})
-        } else if (line.trim().toLowerCase() === 'endwhile') {
+        } else if (src.startsWith('endwhile')) {
             handleCloseScope({type: 'endwhile', ln, context})
-        } else if (context.isValid && line.trim().toLowerCase().startsWith('if')) {
+        } else if (src.startsWith('if')) {
             handleNewScope({context, type: 'if', ln})
-        } else if (context.isValid && line.trim().toLowerCase().startsWith('endif')) {
+        } else if (src.startsWith('endif')) {
             handleCloseScope({type: 'endif', ln, context})
-        } else if (context.isValid && line.trim().toLowerCase().startsWith('elseif')) {
+        } else if (src.startsWith('elseif')) {
             if (context.currentScope.type !== 'if') {
                 context.isValid = false
-                handleError({noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Unexpected ElseIf!`})
+                handleError({child, noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Unexpected ElseIf!`})
             }
-        } else if (context.isValid && line.trim().toLowerCase().startsWith('else')) {
+        } else if (src.startsWith('else')) {
             if (context.currentScope.type !== 'if') {
                 context.isValid = false
-                handleError({noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Unexpected ElseIf!`})
+                handleError({child, noThrow, processor: 'validateSyntax', ln, path, error: BLOCK_SCOPE_ERROR, msg: `Unexpected ElseIf!`})
             }
         }
 
@@ -163,15 +168,15 @@ const validateSyntax = ({source, path, name, extension, size, type, noThrow = tr
         checkSyntaxPair({noThrow, line, path, ln, left: "(", right: ")"})
     })
 
-    if (extension === '.lpscene' && hasSceneStart && !hasSceneEnd) handleError({noThrow, path, error: MISSING_SCENE_END, msg: `Missing SceneEnd()`})
-    if (context.isValid && context.currentScope !== context) handleError({
-        noThrow,
-        processor: 'validateSyntax',
-        path,
-        error: BLOCK_SCOPE_ERROR,
-        msg: `EOF and unclosed ${context.currentScope.type} starting on line ${context.currentScope.start} detected!`
-    })
-    return source
+    if (extension === '.lpscene' && hasSceneStart && !hasSceneEnd) handleError({child, noThrow, path, error: MISSING_SCENE_END, msg: `Missing SceneEnd()`})
+    if (context.isValid && context.currentScope !== context) handleError({child, processor: 'validateSyntax', error: BLOCK_SCOPE_ERROR, msg: `EOF and unclosed ${context.currentScope.type} starting on line ${context.currentScope.start} detected!`})
+    const cleanContext = ({type, start, stop, indent, scopes, parent, depth, currentScope}) => {
+        scopes = scopes.map(scope => cleanContext(scope))
+        return {type, start, stop, indent, scopes, depth}
+    }
+    child.context = cleanContext(context)
+    child.source = source
+    // return source
 }
 
 const choices = ({source, path, name, extension, size, type, noThrow = true}) => {

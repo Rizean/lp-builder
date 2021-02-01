@@ -81,6 +81,8 @@ const FUNCTIONS = new Map([
     ["sneakGame", {params: {min: 0, max: 0}}],
     ["faceEachOther", {params: {min: 2, max: 2}}],
     ["TalkNonConcensual", {params: {min: 0, max: 0}}],
+    ["endPrison", {params: {min: 0, max: 0}}],
+    ["imprison", {params: {min: 0, max: 0}}],
 
     // unverified
     ["chooseMajor", {params: {min: 0, max: 0}}],
@@ -98,7 +100,6 @@ const FUNCTIONS = new Map([
     ["PreciseModify", {params: {min: 0, max: 0}}],
     ["startOpenRelationship", {params: {min: 0, max: 0}}],
     ["endOpenRelationship", {params: {min: 0, max: 0}}],
-    ["endPrison", {params: {min: 0, max: 0}}],
     ["sceneEndLoadLastSave", {params: {min: 0, max: 0}}],
     ["contractSTD", {params: {min: 0, max: 0}}],
     ["startBusiness", {params: {min: 0, max: 0}}],
@@ -112,6 +113,9 @@ const FUNCTIONS = new Map([
     ["cameraFocus", {params: {min: 1, max: 3}}],
     ["AssignResidents", {params: {min: 0, max: 0}}],
     ["cameraMove", {params: {min: 0, max: 0}}],
+    ["sexAtPoint", {params: {min: 3, max: 3}}],
+    ["moveSchools", {params: {min: 0, max: 0}}],
+    ["moveFraternity", {params: {min: 0, max: 0}}],
 ])
 const STATS = [
     "age",

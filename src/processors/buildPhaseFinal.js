@@ -11,18 +11,17 @@ const buildPhaseFinal = async ({tree, buildPath, sourcePath, options = {}, noThr
             if (child.type === 'file') {
 
                 const outPath = `${buildPath}${child.path.replace(sourcePath, '')}`
+                const errorPath = `${buildPath}\\errors${child.path.replace(sourcePath, '')}`
+                const patchPath = `${buildPath}\\patched${child.path.replace(sourcePath, '')}`
                 if (child.extension === '.lpinclude') return logger.info(`Writing: ${outPath} -- Skipped!`)
                 if (child.extension === '.lplang') return logger.info(`Writing: ${outPath} -- Skipped!`)
                 logger.info(`Writing: ${outPath}`)
                 const data = child.source.join(LINEBREAK)
                 child.buildHash = hashString(data)
-                // try {
                 fs.outputFile(outPath, data)
-                // } catch (e) {
-                //     if (e) {
-                //         logger.error(`Failed to write file! source: ${child.path}  target: ${outPath}`)
-                //     }
-                // }
+                if (child.errors?.length > 0) fs.outputFile(errorPath, data)
+                if (child.patched) fs.outputFile(patchPath, data)
+
                 if (translations) {
                     Object.entries(child.translations).forEach(([lang, source]) => {
                         const outPath = `${buildPath}\\${lang}${child.path.replace(sourcePath, '')}`
